@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FairHire | Fair Resume Ranking</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <div class="brand">FairHire <span>AI</span></div>
+  <p>Explainable and fairness-aware candidate ranking</p>
+</header>
+<main>
+  <section class="intro">
+    <p class="eyebrow">RECRUITMENT INTELLIGENCE</p>
+    <h1>Find relevant talent.<br><em>Evaluate fairness.</em></h1>
+    <p>Compare candidate qualifications with a job description and inspect transparent ranking explanations.</p>
+  </section>
+
+  <form method="POST">
+    <section class="panel">
+      <h2>1. Job description</h2>
+      <textarea name="job_description" required placeholder="Paste the job description, required skills, education and experience...">{{ job_description }}</textarea>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <h2>2. Candidate profiles</h2>
+        <button type="button" class="secondary" onclick="addCandidate()">+ Add candidate</button>
+      </div>
+      <div id="candidates">
+        <div class="candidate">
+          <label>Candidate name<input name="candidate_name[]" placeholder="Candidate 1"></label>
+          <label>Qualifications<textarea name="qualifications[]" required placeholder="Skills, education, projects and experience..."></textarea></label>
+          <label>Audit group (optional; not used for ranking)
+            <select name="audit_group[]">
+              <option>Not specified</option><option>Group A</option><option>Group B</option>
+            </select>
+          </label>
+        </div>
+        <div class="candidate">
+          <label>Candidate name<input name="candidate_name[]" placeholder="Candidate 2"></label>
+          <label>Qualifications<textarea name="qualifications[]" required placeholder="Skills, education, projects and experience..."></textarea></label>
+          <label>Audit group (optional; not used for ranking)
+            <select name="audit_group[]">
+              <option>Not specified</option><option>Group A</option><option>Group B</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <button class="primary" type="submit">Rank candidates &amp; evaluate fairness</button>
+    </section>
+  </form>
+
+  {% if error %}<div class="alert">{{ error }}</div>{% endif %}
+
+  {% if results %}
+  <section class="panel results">
+    <p class="eyebrow">MODEL OUTPUT</p>
+    <h2>Candidate ranking</h2>
+    {% for candidate in results %}
+    <article class="result-card">
+      <div class="result-top">
+        <div><span class="rank">#{{ loop.index }}</span><strong>{{ candidate.name }}</strong></div>
+        <strong class="score">{{ candidate.score }}%</strong>
+      </div>
+      <div class="bar"><span style="width: {{ candidate.score }}%"></span></div>
+      <p class="muted">{{ candidate.explanation }}</p>
+      <div class="chips">
+        {% for term in candidate.matched_terms %}<span>{{ term }}</span>{% endfor %}
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+
+  <section class="panel audit">
+    <p class="eyebrow">COUNTERFACTUAL EVALUATION</p>
+    <h2>Fairness audit</h2>
+    <div class="audit-status">{{ "PASS" if audit.invariant else "REVIEW" }}</div>
+    <p>{{ audit.message }}</p>
+    <p class="muted">The audit switches each candidate's audit-only group label while keeping qualifications unchanged. The model should produce identical scores.</p>
+    <h3>Score changes</h3>
+    {% for cid, delta in audit.deltas.items() %}
+      <div class="delta-row"><span>{{ cid }}</span><strong>{{ delta }} percentage points</strong></div>
+    {% endfor %}
+    <p class="disclaimer">Important: this is a controlled invariance test, not proof that the system is free from all bias. Real-world fairness requires representative data, validated protected-group analysis, human review and legal assessment.</p>
+  </section>
+  {% endif %}
+  <footer>Prototype for academic research · Do not use as the sole basis for hiring decisions.</footer>
+</main>
+<script>
+function addCandidate() {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'candidate';
+  wrapper.innerHTML = `
+    <label>Candidate name<input name="candidate_name[]" placeholder="Candidate name"></label>
+    <label>Qualifications<textarea name="qualifications[]" required placeholder="Skills, education, projects and experience..."></textarea></label>
+    <label>Audit group (optional; not used for ranking)
+      <select name="audit_group[]"><option>Not specified</option><option>Group A</option><option>Group B</option></select>
+    </label>`;
+  document.getElementById('candidates').appendChild(wrapper);
+}
+</script>
+</body>
+</html>
