@@ -3,104 +3,691 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FairHire | Fair Resume Ranking</title>
+  <title>FairHire AI | Fairness-Aware Resume Ranking & Compliance Dashboard</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-<header>
-  <div class="brand">FairHire <span>AI</span></div>
-  <p>Explainable and fairness-aware candidate ranking</p>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-logo">FH</div>
+      <div class="brand-text">
+        <strong>FairHire <span>AI</span></strong>
+        <span class="subtext">Fairness-Aware Talent Ranking &amp; Compliance Audit</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      {% if results %}
+      <a href="/api/export-audit" class="btn btn-outline" download>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Export Audit Report
+      </a>
+      {% endif %}
+      <span class="badge badge-neutral">v2.0 Academic Engine</span>
+    </div>
+  </div>
 </header>
-<main>
-  <section class="intro">
-    <p class="eyebrow">RECRUITMENT INTELLIGENCE</p>
-    <h1>Find relevant talent.<br><em>Evaluate fairness.</em></h1>
-    <p>Compare candidate qualifications with a job description and inspect transparent ranking explanations.</p>
+
+<main class="dashboard-container">
+  <!-- Intro Hero -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <span class="pill-tag">ALGORITHMIC FAIRNESS &amp; EXPLAINABLE AI</span>
+      <h1>Rank candidate talent.<br><span class="highlight">Audit algorithmic equity.</span></h1>
+      <p class="hero-desc">
+        A multi-aspect candidate scoring system integrated with EEOC 4/5ths Rule disparate impact metrics, 
+        non-trivial counterfactual token perturbation audits, and bounded-regret fair reranking.
+      </p>
+    </div>
   </section>
 
-  <form method="POST">
-    <section class="panel">
-      <h2>1. Job description</h2>
-      <textarea name="job_description" required placeholder="Paste the job description, required skills, education and experience...">{{ job_description }}</textarea>
-    </section>
+  {% if error %}
+  <div class="alert alert-error">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <div><strong>Error:</strong> {{ error }}</div>
+  </div>
+  {% endif %}
 
-    <section class="panel">
-      <div class="section-heading">
-        <h2>2. Candidate profiles</h2>
-        <button type="button" class="secondary" onclick="addCandidate()">+ Add candidate</button>
-      </div>
-      <div id="candidates">
-        <div class="candidate">
-          <label>Candidate name<input name="candidate_name[]" placeholder="Candidate 1"></label>
-          <label>Qualifications<textarea name="qualifications[]" required placeholder="Skills, education, projects and experience..."></textarea></label>
-          <label>Audit group (optional; not used for ranking)
-            <select name="audit_group[]">
-              <option>Not specified</option><option>Group A</option><option>Group B</option>
-            </select>
-          </label>
+  <!-- Quick Benchmark Datasets Bar -->
+  <div class="benchmark-bar">
+    <span class="benchmark-title">⚡ Pre-loaded Benchmark Datasets:</span>
+    <form method="POST" style="display:inline-flex; gap:10px; align-items:center;">
+      <input type="hidden" name="action" value="load_sample">
+      <button type="submit" name="sample_preset" value="software_engineer" class="btn btn-sm btn-outline">
+        Load Senior Backend Engineer (6 Candidates)
+      </button>
+      <button type="submit" name="sample_preset" value="data_scientist" class="btn btn-sm btn-outline">
+        Load ML Scientist (4 Candidates)
+      </button>
+    </form>
+  </div>
+
+  <!-- Primary Input Section -->
+  <form method="POST" enctype="multipart/form-data" id="rankingForm" class="main-form">
+    <div class="grid-layout">
+      <!-- Left Column: Job Description & Controls -->
+      <div class="col-main">
+        <div class="card">
+          <div class="card-header">
+            <h3>1. Job Description &amp; Role Requirements</h3>
+            <span class="help-text">Input required technical skills, experience, and education</span>
+          </div>
+          <div class="card-body">
+            <textarea name="job_description" id="jobDescription" class="form-textarea" rows="7" required placeholder="Paste full job description including required skills (e.g. Python, Docker, Kubernetes), years of experience, and degree requirements...">{{ job_description }}</textarea>
+          </div>
         </div>
-        <div class="candidate">
-          <label>Candidate name<input name="candidate_name[]" placeholder="Candidate 2"></label>
-          <label>Qualifications<textarea name="qualifications[]" required placeholder="Skills, education, projects and experience..."></textarea></label>
-          <label>Audit group (optional; not used for ranking)
-            <select name="audit_group[]">
-              <option>Not specified</option><option>Group A</option><option>Group B</option>
-            </select>
-          </label>
+
+        <!-- Candidate Inputs & File Upload -->
+        <div class="card">
+          <div class="card-header flex-between">
+            <div>
+              <h3>2. Candidate Profiles &amp; Resumes</h3>
+              <span class="help-text">Add candidates via form text or upload PDF / DOCX / TXT resumes</span>
+            </div>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="addCandidateCard()">+ Add Candidate</button>
+          </div>
+          <div class="card-body">
+            <!-- Multi-file Upload Zone -->
+            <div class="upload-dropzone" id="dropzone">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              <div class="dropzone-text">
+                <strong>Upload Resume Files (PDF, DOCX, TXT)</strong>
+                <span>Drag and drop multiple resumes or click to browse</span>
+              </div>
+              <input type="file" name="resume_files" id="fileInput" multiple accept=".pdf,.docx,.txt" class="file-input-hidden">
+              <button type="button" class="btn btn-sm btn-outline" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+            </div>
+            <div id="fileList" class="file-preview-list"></div>
+
+            <!-- Candidate Cards List -->
+            <div id="candidatesList" class="candidates-container">
+              {% if candidates %}
+                {% for cand in candidates %}
+                <div class="candidate-entry-card" id="candidate-card-{{ loop.index }}">
+                  <div class="entry-header">
+                    <span class="entry-index">Candidate {{ loop.index }}</span>
+                    <button type="button" class="btn-remove" onclick="removeCandidateCard(this)" title="Remove candidate">&times;</button>
+                  </div>
+                  <div class="entry-grid">
+                    <div>
+                      <label class="form-label">Full Name</label>
+                      <input type="text" name="candidate_name[]" value="{{ cand.name }}" class="form-input" placeholder="e.g. Jane Doe">
+                    </div>
+                    <div>
+                      <label class="form-label">Audit Group <small class="text-muted">(Isolated from model features)</small></label>
+                      <select name="audit_group[]" class="form-select">
+                        <option value="Group A" {% if cand.audit_group == 'Group A' %}selected{% endif %}>Group A</option>
+                        <option value="Group B" {% if cand.audit_group == 'Group B' %}selected{% endif %}>Group B</option>
+                        <option value="Not specified" {% if cand.audit_group == 'Not specified' %}selected{% endif %}>Not specified</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="mt-2">
+                    <label class="form-label">Qualifications, Skills &amp; Experience</label>
+                    <textarea name="qualifications[]" class="form-textarea form-textarea-sm" rows="4" placeholder="Candidate skills, experience history, projects, and education...">{{ cand.qualifications }}</textarea>
+                  </div>
+                </div>
+                {% endfor %}
+              {% else %}
+                <!-- Initial 2 blank candidate forms -->
+                <div class="candidate-entry-card" id="candidate-card-1">
+                  <div class="entry-header">
+                    <span class="entry-index">Candidate 1</span>
+                  </div>
+                  <div class="entry-grid">
+                    <div>
+                      <label class="form-label">Full Name</label>
+                      <input type="text" name="candidate_name[]" class="form-input" placeholder="e.g. Alex Mercer">
+                    </div>
+                    <div>
+                      <label class="form-label">Audit Group <small class="text-muted">(For fairness tracking only)</small></label>
+                      <select name="audit_group[]" class="form-select">
+                        <option value="Group A" selected>Group A</option>
+                        <option value="Group B">Group B</option>
+                        <option value="Not specified">Not specified</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="mt-2">
+                    <label class="form-label">Qualifications, Skills &amp; Experience</label>
+                    <textarea name="qualifications[]" class="form-textarea form-textarea-sm" rows="4" placeholder="Technical skills, employment history, degrees..."></textarea>
+                  </div>
+                </div>
+
+                <div class="candidate-entry-card" id="candidate-card-2">
+                  <div class="entry-header">
+                    <span class="entry-index">Candidate 2</span>
+                  </div>
+                  <div class="entry-grid">
+                    <div>
+                      <label class="form-label">Full Name</label>
+                      <input type="text" name="candidate_name[]" class="form-input" placeholder="e.g. Sarah Lin">
+                    </div>
+                    <div>
+                      <label class="form-label">Audit Group <small class="text-muted">(For fairness tracking only)</small></label>
+                      <select name="audit_group[]" class="form-select">
+                        <option value="Group A">Group A</option>
+                        <option value="Group B" selected>Group B</option>
+                        <option value="Not specified">Not specified</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="mt-2">
+                    <label class="form-label">Qualifications, Skills &amp; Experience</label>
+                    <textarea name="qualifications[]" class="form-textarea form-textarea-sm" rows="4" placeholder="Technical skills, employment history, degrees..."></textarea>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Configuration & Submission Row -->
+            <div class="ranking-options-bar">
+              <div>
+                <label class="form-label"><strong>Ranking Strategy:</strong></label>
+                <div class="radio-group">
+                  <label class="radio-label">
+                    <input type="radio" name="ranking_mode" value="standard" {% if ranking_mode != 'fair' %}checked{% endif %}>
+                    <span>Standard Multi-Aspect Hybrid Ranking</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" name="ranking_mode" value="fair" {% if ranking_mode == 'fair' %}checked{% endif %}>
+                    <span>Fair Top-k Post-Processed Reranking (FA*IR)</span>
+                  </label>
+                </div>
+              </div>
+              <button type="submit" name="action" value="rank" class="btn btn-primary btn-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                Rank Candidates &amp; Execute Audit
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-      <button class="primary" type="submit">Rank candidates &amp; evaluate fairness</button>
-    </section>
+    </div>
   </form>
 
-  {% if error %}<div class="alert">{{ error }}</div>{% endif %}
-
   {% if results %}
-  <section class="panel results">
-    <p class="eyebrow">MODEL OUTPUT</p>
-    <h2>Candidate ranking</h2>
-    {% for candidate in results %}
-    <article class="result-card">
-      <div class="result-top">
-        <div><span class="rank">#{{ loop.index }}</span><strong>{{ candidate.name }}</strong></div>
-        <strong class="score">{{ candidate.score }}%</strong>
-      </div>
-      <div class="bar"><span style="width: {{ candidate.score }}%"></span></div>
-      <p class="muted">{{ candidate.explanation }}</p>
-      <div class="chips">
-        {% for term in candidate.matched_terms %}<span>{{ term }}</span>{% endfor %}
-      </div>
-    </article>
-    {% endfor %}
-  </section>
+  <!-- Tab Navigation for Results -->
+  <section class="results-dashboard mt-6">
+    <div class="tab-header">
+      <button class="tab-btn active" onclick="switchTab('tab-rankings')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        1. Rankings &amp; Explanations
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-fairness')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        2. Fairness Metrics Suite
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-audit')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        3. Counterfactual &amp; Proxy Audit
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-comparison')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="3" x2="12" y2="21"></line></svg>
+        4. Fair Reranking Comparison
+      </button>
+    </div>
 
-  <section class="panel audit">
-    <p class="eyebrow">COUNTERFACTUAL EVALUATION</p>
-    <h2>Fairness audit</h2>
-    <div class="audit-status">{{ "PASS" if audit.invariant else "REVIEW" }}</div>
-    <p>{{ audit.message }}</p>
-    <p class="muted">The audit switches each candidate's audit-only group label while keeping qualifications unchanged. The model should produce identical scores.</p>
-    <h3>Score changes</h3>
-    {% for cid, delta in audit.deltas.items() %}
-      <div class="delta-row"><span>{{ cid }}</span><strong>{{ delta }} percentage points</strong></div>
-    {% endfor %}
-    <p class="disclaimer">Important: this is a controlled invariance test, not proof that the system is free from all bias. Real-world fairness requires representative data, validated protected-group analysis, human review and legal assessment.</p>
+    <!-- TAB 1: RANKINGS & EXPLANATIONS -->
+    <div id="tab-rankings" class="tab-pane active">
+      <div class="tab-intro">
+        <h2>Ranked Candidates ({{ results|length }} Evaluated)</h2>
+        <p class="text-muted">Multi-aspect composite score factoring skill match (40%), semantic relevance (30%), experience alignment (15%), and education fit (15%).</p>
+      </div>
+
+      <div class="ranking-cards-grid">
+        {% for cand in results %}
+        <article class="candidate-result-card">
+          <div class="cand-top-row">
+            <div class="cand-identity">
+              <span class="rank-badge rank-{{ cand.rank }}">#{{ cand.rank }}</span>
+              <div>
+                <h3 class="cand-name">{{ cand.name }}</h3>
+                <span class="cand-meta">ID: {{ cand.candidate_id }} &bull; Audit: <span class="group-pill">{{ cand.audit_group }}</span></span>
+              </div>
+            </div>
+            <div class="cand-score-box">
+              <span class="score-number">{{ cand.score }}%</span>
+              <span class="tier-tag tier-{{ cand.tier_badge|lower|replace(' ', '-') }}">{{ cand.tier_badge }}</span>
+            </div>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="score-progress-bar">
+            <div class="fill" style="width: {{ cand.score }}%"></div>
+          </div>
+
+          <!-- Multi-Aspect Breakdown Grid -->
+          <div class="aspects-summary-grid">
+            <div class="aspect-cell">
+              <span class="aspect-label">Skill Match (40%)</span>
+              <strong class="aspect-val">{{ cand.aspect_scores.skill_match }}%</strong>
+            </div>
+            <div class="aspect-cell">
+              <span class="aspect-label">Semantic Relevance (30%)</span>
+              <strong class="aspect-val">{{ cand.aspect_scores.semantic_relevance }}%</strong>
+            </div>
+            <div class="aspect-cell">
+              <span class="aspect-label">Experience Fit (15%)</span>
+              <strong class="aspect-val">{{ cand.aspect_scores.experience_fit }}%</strong>
+            </div>
+            <div class="aspect-cell">
+              <span class="aspect-label">Education Fit (15%)</span>
+              <strong class="aspect-val">{{ cand.aspect_scores.education_fit }}%</strong>
+            </div>
+          </div>
+
+          <!-- Explanation & Narrative -->
+          <div class="explanation-box">
+            <p class="narrative-text">{{ cand.explanation_details.narrative_summary }}</p>
+            
+            {% if cand.explanation_details.strengths %}
+            <div class="highlight-row">
+              <strong class="text-success">Strengths:</strong>
+              <ul class="clean-list">
+                {% for st in cand.explanation_details.strengths %}<li>{{ st }}</li>{% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+
+            {% if cand.explanation_details.skill_gaps %}
+            <div class="highlight-row mt-1">
+              <strong class="text-warning">Identified Gaps:</strong>
+              <ul class="clean-list">
+                {% for gap in cand.explanation_details.skill_gaps %}<li>{{ gap }}</li>{% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Skill Chips -->
+          <div class="skill-chips-container">
+            {% for skill in cand.skills_extracted.matched %}
+            <span class="skill-chip chip-matched" title="Matched required skill">&check; {{ skill }}</span>
+            {% endfor %}
+            {% for bonus in cand.skills_extracted.bonus %}
+            <span class="skill-chip chip-bonus" title="Additional relevant skill">+ {{ bonus }}</span>
+            {% endfor %}
+            {% for missing in cand.skills_extracted.missing %}
+            <span class="skill-chip chip-missing" title="Missing required skill">&times; {{ missing }}</span>
+            {% endfor %}
+          </div>
+
+          <div class="cand-footer">
+            <small class="text-muted"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> {{ cand.explanation_details.demographic_isolation }}</small>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- TAB 2: FAIRNESS METRICS SUITE -->
+    <div id="tab-fairness" class="tab-pane">
+      <div class="tab-intro">
+        <h2>Algorithmic Fairness &amp; Compliance Suite</h2>
+        <p class="text-muted">Rigorous statistical evaluation against EEOC 4/5ths Rule, demographic parity, and rank-biased exposure.</p>
+      </div>
+
+      {% if fairness_metrics and fairness_metrics.primary_comparison %}
+      <!-- Compliance Status Banner -->
+      <div class="compliance-banner banner-{{ fairness_metrics.status|lower }}">
+        <div class="banner-icon">
+          {% if fairness_metrics.four_fifths_compliant %}
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          {% else %}
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          {% endif %}
+        </div>
+        <div class="banner-content">
+          <h3>{{ fairness_metrics.status.replace('_', ' ') }}</h3>
+          <p>{{ fairness_metrics.status_message }}</p>
+        </div>
+        <div class="banner-badge">
+          <span>DIR: <strong>{{ fairness_metrics.disparate_impact_ratio }}</strong></span>
+          <small>Threshold &ge; 0.80</small>
+        </div>
+      </div>
+
+      <!-- 4 Key Metrics Metric Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="metric-title">Disparate Impact Ratio (DIR)</span>
+          <div class="metric-value-row">
+            <span class="metric-number">{{ fairness_metrics.disparate_impact_ratio }}</span>
+            <span class="metric-tag {% if fairness_metrics.four_fifths_compliant %}tag-pass{% else %}tag-fail{% endif %}">
+              {{ "EEOC Compliant" if fairness_metrics.four_fifths_compliant else "Adverse Impact" }}
+            </span>
+          </div>
+          <p class="metric-desc">Selection Rate Ratio between audited groups at top-{{ fairness_metrics.top_k_used }}. Values &ge; 0.80 satisfy EEOC 4/5ths rule.</p>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-title">Demographic Parity Diff</span>
+          <div class="metric-value-row">
+            <span class="metric-number">{{ fairness_metrics.demographic_parity_diff }}</span>
+            <span class="metric-tag tag-neutral">|P(Y=1|A) - P(Y=1|B)|</span>
+          </div>
+          <p class="metric-desc">Absolute disparity in selection rates. Ideal is 0.0 (equal probability of selection across groups).</p>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-title">Equal Opportunity Diff</span>
+          <div class="metric-value-row">
+            <span class="metric-number">{{ fairness_metrics.equal_opportunity_diff }}</span>
+            <span class="metric-tag tag-neutral">|TPR_A - TPR_B|</span>
+          </div>
+          <p class="metric-desc">Difference in True Positive Rate among qualified candidates. Zero represents equal opportunity.</p>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-title">Rank Positional Exposure</span>
+          <div class="metric-value-row">
+            <span class="metric-number">{{ fairness_metrics.exposure_disparity.exposure_ratio }}</span>
+            <span class="metric-tag tag-neutral">Log Discounted</span>
+          </div>
+          <p class="metric-desc">Ratio of aggregate visual exposure discounted by rank position (1/log2(1+r)). 1.0 represents balanced attention.</p>
+        </div>
+      </div>
+
+      <!-- Group Distributions Summary Table -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h3>Demographic Group Selection &amp; Score Distributions</h3>
+        </div>
+        <div class="card-body p-0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Audit Group</th>
+                <th>Pool Count</th>
+                <th>Selected (Top-{{ fairness_metrics.top_k_used }})</th>
+                <th>Selection Rate</th>
+                <th>Mean Score</th>
+                <th>Median Score</th>
+                <th>Std Dev</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for g_name, g_stat in fairness_metrics.group_distributions.items() %}
+              <tr>
+                <td><strong>{{ g_name }}</strong></td>
+                <td>{{ g_stat.count }}</td>
+                <td>
+                  {% if g_name == fairness_metrics.primary_comparison.group_a %}
+                    {{ fairness_metrics.primary_comparison.group_a_selected }}
+                  {% elif g_name == fairness_metrics.primary_comparison.group_b %}
+                    {{ fairness_metrics.primary_comparison.group_b_selected }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td>
+                  {% if g_name == fairness_metrics.primary_comparison.group_a %}
+                    <strong>{{ fairness_metrics.primary_comparison.group_a_selection_rate }}%</strong>
+                  {% elif g_name == fairness_metrics.primary_comparison.group_b %}
+                    <strong>{{ fairness_metrics.primary_comparison.group_b_selection_rate }}%</strong>
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td>{{ g_stat.mean_score }}%</td>
+                <td>{{ g_stat.median_score }}%</td>
+                <td>&plusmn;{{ g_stat.std_dev }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <p>{{ fairness_metrics.status_message if fairness_metrics else "Execute ranking with at least two audit groups (Group A and Group B) to calculate multi-group fairness metrics." }}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- TAB 3: COUNTERFACTUAL & PROXY AUDIT -->
+    <div id="tab-audit" class="tab-pane">
+      <div class="tab-intro">
+        <h2>Counterfactual Sensitivity &amp; Proxy Bias Audit</h2>
+        <p class="text-muted">Non-trivial individual fairness verification: perturbs gender pronouns, honorifics, and demographic affiliations within real candidate text to test model invariance.</p>
+      </div>
+
+      {% if audit %}
+      <div class="compliance-banner banner-{{ 'pass' if audit.is_counterfactually_fair else 'fail' }}">
+        <div class="banner-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+        <div class="banner-content">
+          <h3>{{ audit.verdict }}</h3>
+          <p>{{ audit.summary }}</p>
+        </div>
+        <div class="banner-badge">
+          <span>Invariance: <strong>{{ audit.metrics.invariance_rate_pct }}%</strong></span>
+          <small>Rank Flips: {{ audit.metrics.rank_flips_count }}</small>
+        </div>
+      </div>
+
+      <!-- Audit Stats Grid -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="metric-title">Max Counterfactual Delta</span>
+          <div class="metric-value-row">
+            <span class="metric-number">{{ audit.metrics.max_score_delta }}</span>
+            <span class="metric-tag tag-neutral">Points</span>
+          </div>
+          <p class="metric-desc">Maximum observed score change when demographic markers were inverted.</p>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">Mean Absolute Shift</span>
+          <div class="metric-value-row">
+            <span class="metric-number">{{ audit.metrics.mean_abs_delta }}</span>
+            <span class="metric-tag tag-neutral">Points</span>
+          </div>
+          <p class="metric-desc">Average magnitude of score perturbation across all candidate profiles.</p>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">Rank Order Inversions</span>
+          <div class="metric-value-row">
+            <span class="metric-number">{{ audit.metrics.rank_flips_count }}</span>
+            <span class="metric-tag {% if audit.metrics.rank_flips_count == 0 %}tag-pass{% else %}tag-fail{% endif %}">
+              {{ "Zero Inversions" if audit.metrics.rank_flips_count == 0 else "Instability" }}
+            </span>
+          </div>
+          <p class="metric-desc">Count of candidates whose ranking changed purely due to demographic perturbation.</p>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">Detected Proxy Indicators</span>
+          <div class="metric-value-row">
+            <span class="metric-number">{{ audit.metrics.total_proxies_flagged }}</span>
+            <span class="metric-tag tag-neutral">Flags</span>
+          </div>
+          <p class="metric-desc">Protected-attribute proxies (graduation dates, gendered clubs) identified in resume text.</p>
+        </div>
+      </div>
+
+      <!-- Individual Perturbation Invariance Table -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h3>Individual Candidate Invariance Verification</h3>
+        </div>
+        <div class="card-body p-0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Candidate</th>
+                <th>Baseline Score</th>
+                <th>Perturbed Score</th>
+                <th>Score Delta</th>
+                <th>Baseline Rank</th>
+                <th>Perturbed Rank</th>
+                <th>Rank Shift</th>
+                <th>Invariance Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ind in audit.individual_audits %}
+              <tr>
+                <td><strong>{{ ind.candidate_name }}</strong> <small class="text-muted">({{ ind.candidate_id }})</small></td>
+                <td>{{ ind.baseline_score }}%</td>
+                <td>{{ ind.counterfactual_score }}%</td>
+                <td>
+                  <span class="{% if ind.score_delta|abs <= 0.1 %}text-success{% else %}text-warning{% endif %}">
+                    {{ ind.score_delta }}
+                  </span>
+                </td>
+                <td>#{{ ind.baseline_rank }}</td>
+                <td>#{{ ind.counterfactual_rank }}</td>
+                <td>
+                  {% if ind.rank_shift == 0 %}
+                    <span class="badge badge-success">0</span>
+                  {% else %}
+                    <span class="badge badge-warning">{{ ind.rank_shift }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if ind.score_delta|abs <= 0.25 and ind.rank_shift == 0 %}
+                    <span class="text-success">&check; Invariant</span>
+                  {% else %}
+                    <span class="text-danger">&times; Sensitive</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Proxy Alerts Card -->
+      {% if audit.proxy_alerts %}
+      <div class="card mt-4">
+        <div class="card-header">
+          <h3>Protected Attribute Proxy Signals Flagged in Text</h3>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">The following non-qualification proxy signals were detected in resume text. While the ranking engine isolates canonical skills, redacting these tokens further safeguards against human reviewer bias.</p>
+          <div class="proxy-alerts-list">
+            {% for item in audit.proxy_alerts %}
+              <div class="proxy-alert-item">
+                <strong>{{ item.name }} ({{ item.candidate_id }}):</strong>
+                {% for p in item.proxies %}
+                  <div class="proxy-tag">
+                    <span class="proxy-category">{{ p.category }}:</span>
+                    <span class="proxy-terms">{{ p.flagged_terms|join(', ') }}</span>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% endif %}
+    </div>
+
+    <!-- TAB 4: FAIR RERANKING COMPARISON -->
+    <div id="tab-comparison" class="tab-pane">
+      <div class="tab-intro">
+        <h2>Unconstrained Ranking vs. Fair Top-k Reranking</h2>
+        <p class="text-muted">Examine the utility vs. equity trade-off: compare raw relevance ranking against FA*IR-inspired post-processed reranking.</p>
+      </div>
+
+      {% if fair_results %}
+      <div class="comparison-grid">
+        <!-- Unconstrained Ranking Column -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Standard Relevance Ranking</h3>
+            <span class="badge badge-neutral">Pure Utility</span>
+          </div>
+          <div class="card-body p-0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Candidate</th>
+                  <th>Group</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cand in results %}
+                <tr>
+                  <td><span class="rank-badge rank-{{ cand.rank }}">#{{ cand.rank }}</span></td>
+                  <td><strong>{{ cand.name }}</strong></td>
+                  <td><span class="group-pill">{{ cand.audit_group }}</span></td>
+                  <td><strong>{{ cand.score }}%</strong></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Fair Reranked Column -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Fair Top-k Reranked</h3>
+            <span class="badge badge-success">Equity Bounded</span>
+          </div>
+          <div class="card-body p-0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Fair Rank</th>
+                  <th>Candidate</th>
+                  <th>Group</th>
+                  <th>Rank Shift</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for fc in fair_results %}
+                <tr>
+                  <td><span class="rank-badge rank-{{ fc.fair_rank }}">#{{ fc.fair_rank }}</span></td>
+                  <td><strong>{{ fc.name }}</strong></td>
+                  <td><span class="group-pill">{{ fc.audit_group }}</span></td>
+                  <td>
+                    {% if fc.rank_delta > 0 %}
+                      <span class="text-success">&uarr; +{{ fc.rank_delta }}</span>
+                    {% elif fc.rank_delta < 0 %}
+                      <span class="text-danger">&darr; {{ fc.rank_delta }}</span>
+                    {% else %}
+                      <span class="text-muted">&mdash; 0</span>
+                    {% endif %}
+                  </td>
+                  <td><strong>{{ fc.score }}%</strong></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
   </section>
   {% endif %}
-  <footer>Prototype for academic research · Do not use as the sole basis for hiring decisions.</footer>
+
+  <!-- Regulatory & Academic Footer -->
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <div>
+        <strong>FairHire AI Compliance Engine</strong> &bull; Compliant with EEOC Uniform Guidelines &bull; NYC Local Law 144 &bull; EU AI Act High-Risk Employment AI Standards.
+      </div>
+      <div class="text-muted mt-1">
+        Designed for academic research &amp; auditing. Algorithmic outputs should assist, not replace, human hiring oversight.
+      </div>
+    </div>
+  </footer>
 </main>
-<script>
-function addCandidate() {
-  const wrapper = document.createElement('div');
-  wrapper.className = 'candidate';
-  wrapper.innerHTML = `
-    <label>Candidate name<input name="candidate_name[]" placeholder="Candidate name"></label>
-    <label>Qualifications<textarea name="qualifications[]" required placeholder="Skills, education, projects and experience..."></textarea></label>
-    <label>Audit group (optional; not used for ranking)
-      <select name="audit_group[]"><option>Not specified</option><option>Group A</option><option>Group B</option></select>
-    </label>`;
-  document.getElementById('candidates').appendChild(wrapper);
-}
-</script>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,76 @@
+{
+  "datasets": {
+    "software_engineer": {
+      "title": "Senior Backend Software Engineer (Python / Cloud)",
+      "job_description": "We are seeking a Senior Backend Software Engineer with 5+ years of experience building scalable distributed systems and REST APIs. Requirements:\n- Strong proficiency in Python, Django, or FastAPI\n- Experience with relational databases like PostgreSQL and caching with Redis\n- Production experience with Docker, Kubernetes, and AWS (Amazon Web Services)\n- Solid foundation in microservices architecture, CI/CD pipelines, and unit testing (pytest)\n- Bachelor's or Master's degree in Computer Science, Software Engineering, or related field\n- Collaborative mindset, mentoring junior engineers, and participating in agile/scrum processes.",
+      "candidates": [
+        {
+          "candidate_id": "C1",
+          "name": "Alex Mercer",
+          "audit_group": "Group A",
+          "qualifications": "Alex Mercer | Senior Software Engineer | alex.mercer@email.com\nProfessional Summary: Senior Backend Developer with 6 years of experience designing high-throughput microservices in Python.\nTechnical Skills: Python, FastAPI, Django, PostgreSQL, Redis, Docker, Kubernetes, AWS (EC2, S3, RDS), Git, CI/CD, Pytest, REST APIs, Microservices, Agile.\nExperience:\n- Lead Backend Engineer at FinTech Labs (4 years): Architected distributed transaction pipelines using FastAPI, Redis, and PostgreSQL handling 15,000 req/sec. Managed containerized deployments on AWS Kubernetes (EKS).\n- Software Engineer at DataCloud Inc (2 years): Built internal REST APIs with Django and PostgreSQL. Implemented unit testing and CI/CD workflows.\nEducation:\n- Master's in Computer Science, University of Technology (2018)."
+        },
+        {
+          "candidate_id": "C2",
+          "name": "Sarah Lin",
+          "audit_group": "Group B",
+          "qualifications": "Sarah Lin | Backend Cloud Engineer | sarah.lin@email.com\nSummary: Passionate software engineer with 5.5 years of industry experience specializing in scalable web services, containerization, and data persistence.\nSkills: Python, Django, Flask, PostgreSQL, MySQL, Redis, Docker, AWS, Terraform, Git, Microservices, RESTful APIs, TDD, Agile.\nExperience:\n- Senior Backend Engineer at HealthTech Solutions (3.5 years): Developed core patient medical records API using Python, Django, and PostgreSQL. Reduced query latency by 45% using Redis caching. Active member of Society of Women Engineers.\n- Python Developer at AppSphere (2 years): Created REST APIs with Flask and Docker on AWS.\nEducation:\n- Bachelor of Science in Computer Science, State University (2019)."
+        },
+        {
+          "candidate_id": "C3",
+          "name": "Marcus Vance",
+          "audit_group": "Group A",
+          "qualifications": "Marcus Vance | Backend Developer | marcus.v@email.com\nSummary: Software engineer with 4 years of experience focused on Python backend systems, SQL database optimization, and cloud services.\nSkills: Python, FastAPI, PostgreSQL, SQLite, Docker, AWS, Git, REST API, Unit Testing, Linux, Bash.\nExperience:\n- Backend Developer at CloudScale Systems (2.5 years): Maintained microservices written in FastAPI and PostgreSQL. Implemented automated unit tests and Docker image builds on AWS.\n- Junior Python Engineer at WebLogic (1.5 years): Assisted in developing RESTful endpoints and database migrations.\nEducation:\n- Bachelor of Science in Software Engineering, Tech Institute (2020)."
+        },
+        {
+          "candidate_id": "C4",
+          "name": "Elena Rostova",
+          "audit_group": "Group B",
+          "qualifications": "Elena Rostova | Distributed Systems Engineer | elena.r@email.com\nSummary: Experienced backend architect with 7 years of expertise in high-concurrency microservices, Kubernetes orchestration, and event-driven architectures.\nSkills: Python, Go, FastAPI, Kubernetes, Docker, PostgreSQL, Redis, Kafka, AWS, CI/CD, Microservices, System Design, Pytest.\nExperience:\n- Staff Infrastructure & Backend Engineer at Streamline (4 years): Designed Kafka-based streaming ingestion engine in Python and Go deployed on Kubernetes clusters across AWS regions. Mentored team of 6 engineers.\n- Senior Python Engineer at Nexa Solutions (3 years): Maintained core billing services with FastAPI, PostgreSQL, and Redis.\nEducation:\n- Master's in Computer Engineering, Polytechnic University (2017)."
+        },
+        {
+          "candidate_id": "C5",
+          "name": "David Chen",
+          "audit_group": "Group A",
+          "qualifications": "David Chen | Full Stack Developer | david.chen@email.com\nSummary: Full stack developer with 3 years of experience primarily focused on JavaScript, React, and Node.js with secondary exposure to Python.\nSkills: JavaScript, TypeScript, React, Node.js, Express, Python, MongoDB, MySQL, Git, REST API.\nExperience:\n- Web Developer at WebDesign Studio (3 years): Built user-facing web applications using React and Node.js. Wrote small Python scripts for data extraction and basic automation.\nEducation:\n- Bachelor of Arts in Information Technology (2021)."
+        },
+        {
+          "candidate_id": "C6",
+          "name": "Fatima Al-Sayed",
+          "audit_group": "Group B",
+          "qualifications": "Fatima Al-Sayed | DevOps & Cloud Software Engineer | fatima.as@email.com\nSummary: Software engineer with 4.5 years of experience bridging cloud infrastructure and backend API development in Python.\nSkills: Python, Django, Docker, Kubernetes, AWS, Terraform, CI/CD, PostgreSQL, Linux, Git, REST APIs, Prometheus.\nExperience:\n- Cloud Software Engineer at CloudFrontier (3 years): Built automated deployment pipelines and backend microservices using Python and Django on AWS EKS with Terraform.\n- Systems Developer at Enterprise IT (1.5 years): Managed Linux servers, PostgreSQL databases, and Docker containers.\nEducation:\n- Bachelor of Science in Computer Science (2020)."
+        }
+      ]
+    },
+    "data_scientist": {
+      "title": "Machine Learning Engineer / Data Scientist",
+      "job_description": "Looking for a Machine Learning Engineer with 3+ years experience developing and deploying predictive models. Requirements:\n- Expertise in Python, PyTorch, Scikit-Learn, Pandas, and NumPy\n- Deep understanding of Machine Learning, Deep Learning, and NLP (Natural Language Processing)\n- Experience deploying models to production using Docker and FastAPI or Flask\n- Familiarity with SQL and big data tools like Apache Spark or BigQuery\n- Master's or PhD in Computer Science, Statistics, Mathematics, or related field.",
+      "candidates": [
+        {
+          "candidate_id": "C1",
+          "name": "Dr. Jordan Hayes",
+          "audit_group": "Group A",
+          "qualifications": "Dr. Jordan Hayes | ML Scientist | j.hayes@email.com\nSummary: Applied AI Researcher with 4 years post-PhD experience building deep learning and NLP models.\nSkills: Python, PyTorch, Scikit-Learn, Pandas, NumPy, Deep Learning, Machine Learning, NLP, LLM, Transformers, Docker, FastAPI, SQL.\nExperience:\n- Senior ML Engineer at CognitiveAI (3 years): Built transformer-based text classification systems using PyTorch and deployed via FastAPI containerized in Docker.\nEducation: PhD in Computer Science, Stanford University (2020)."
+        },
+        {
+          "candidate_id": "C2",
+          "name": "Maya Patel",
+          "audit_group": "Group B",
+          "qualifications": "Maya Patel | Machine Learning Engineer | maya.patel@email.com\nSummary: ML Engineer with 3.5 years experience in machine learning pipelines, NLP, and model serving.\nSkills: Python, PyTorch, TensorFlow, Scikit-Learn, Pandas, NumPy, Machine Learning, NLP, Docker, Flask, SQL, BigQuery.\nExperience:\n- ML Engineer at BioHealth Analytics (3.5 years): Developed predictive diagnostic models with Scikit-Learn and PyTorch. Built automated model serving API using Flask and Docker.\nEducation: Master's of Science in Data Science, University of Michigan (2021)."
+        },
+        {
+          "candidate_id": "C3",
+          "name": "Kevin Brooks",
+          "audit_group": "Group A",
+          "qualifications": "Kevin Brooks | Data Analyst | kevin.b@email.com\nSummary: Data Analyst with 2 years experience in statistical reporting, SQL, and data visualization.\nSkills: Python, Pandas, SQL, Excel, Tableau, Scikit-Learn, Statistics, Git.\nExperience:\n- Data Analyst at RetailMetrics (2 years): Created dashboards and statistical reports. Applied basic scikit-learn models for customer segmentation.\nEducation: Bachelor's in Mathematics (2022)."
+        },
+        {
+          "candidate_id": "C4",
+          "name": "Amina Diop",
+          "audit_group": "Group B",
+          "qualifications": "Amina Diop | Senior Data Scientist | amina.d@email.com\nSummary: Senior Data Scientist with 5 years experience in predictive modeling, Spark data pipelines, and deep neural networks.\nSkills: Python, PyTorch, Scikit-Learn, Pandas, NumPy, Apache Spark, BigQuery, Machine Learning, Deep Learning, Docker, SQL.\nExperience:\n- Senior Data Scientist at GlobalTech (3 years): Built large-scale recommender models using PyTorch and Spark.\n- Data Scientist at FinAI (2 years): Feature engineering and supervised learning models.\nEducation: Master's in Statistics, Columbia University (2019)."
+        }
+      ]
+    }
+  }
+}
