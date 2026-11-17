@@ -6,8 +6,7 @@ A small academic prototype that compares candidate qualifications with a job des
 - Python 3.10+
 - pip
 
-## Run on Fedora / Linux
-
+## Run on windows
 ```bash
 cd fairness_aware_resume_ranking
 python -m venv .venv
