@@ -1,58 +1,125 @@
 {
   "experiment_version": "3.0",
   "semantic_transformers_enabled": false,
-  "cohort_evaluations": {
+  "sample_cohort_evaluations": {
     "software_engineer": {
       "title": "Senior Backend Software Engineer (Python / Cloud)",
       "evaluation": {
         "candidate_count": 6,
         "top_k": 3,
+        "ground_truth_labels_used": false,
         "models": {
           "tfidf_baseline": {
             "disparate_impact_ratio": 0.5,
             "demographic_parity_diff": 0.333,
             "equal_opportunity_diff": 0.0,
-            "precision_at_k": 0.0,
+            "eod_valid": false,
             "four_fifths_compliant": false,
-            "theil_inequality_index": 0.0714
+            "precision_at_k": 0.0,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.0714,
+            "normalized_theil_index": 0.0398
           },
           "hybrid_ranking": {
             "disparate_impact_ratio": 0.5,
             "demographic_parity_diff": 0.333,
             "equal_opportunity_diff": 0.0,
-            "precision_at_k": 0.6667,
+            "eod_valid": false,
             "four_fifths_compliant": false,
-            "theil_inequality_index": 0.0714
+            "precision_at_k": 0.6667,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.0714,
+            "normalized_theil_index": 0.0398
           },
-          "fair_reranked_hybrid": {
+          "fair_reranked_moderate": {
+            "constraint_level": "moderate",
+            "deficit_threshold": 0.75,
             "disparate_impact_ratio": 0.5,
             "demographic_parity_diff": 0.333,
             "equal_opportunity_diff": 0.0,
+            "eod_valid": false,
+            "four_fifths_compliant": false,
             "precision_at_k": 0.6667,
+            "recall_at_k": 1.0,
             "ndcg_at_k": 1.0,
             "utility_retention_pct": 99.92,
             "swaps_count": 2,
-            "four_fifths_compliant": false,
-            "theil_inequality_index": 0.0714
+            "avg_rank_shift": 0.33,
+            "max_rank_shift": 1,
+            "theil_inequality_index": 0.0714,
+            "normalized_theil_index": 0.0398
+          },
+          "fair_rerank_variants": {
+            "relaxed": {
+              "constraint_level": "relaxed",
+              "deficit_threshold": 1.0,
+              "disparate_impact_ratio": 0.5,
+              "demographic_parity_diff": 0.333,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": false,
+              "four_fifths_compliant": false,
+              "precision_at_k": 0.6667,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 1.0,
+              "utility_retention_pct": 99.92,
+              "swaps_count": 2,
+              "avg_rank_shift": 0.33,
+              "max_rank_shift": 1,
+              "theil_inequality_index": 0.0714,
+              "normalized_theil_index": 0.0398
+            },
+            "moderate": {
+              "constraint_level": "moderate",
+              "deficit_threshold": 0.75,
+              "disparate_impact_ratio": 0.5,
+              "demographic_parity_diff": 0.333,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": false,
+              "four_fifths_compliant": false,
+              "precision_at_k": 0.6667,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 1.0,
+              "utility_retention_pct": 99.92,
+              "swaps_count": 2,
+              "avg_rank_shift": 0.33,
+              "max_rank_shift": 1,
+              "theil_inequality_index": 0.0714,
+              "normalized_theil_index": 0.0398
+            },
+            "strict": {
+              "constraint_level": "strict",
+              "deficit_threshold": 0.5,
+              "disparate_impact_ratio": 0.5,
+              "demographic_parity_diff": 0.333,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": false,
+              "four_fifths_compliant": false,
+              "precision_at_k": 0.6667,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 0.9709,
+              "utility_retention_pct": 99.26,
+              "swaps_count": 4,
+              "avg_rank_shift": 1.0,
+              "max_rank_shift": 2,
+              "theil_inequality_index": 0.0714,
+              "normalized_theil_index": 0.0398
+            }
           }
         },
         "stability": {
-          "tfidf_vs_hybrid": {
-            "kendall_tau": 0.4667,
-            "avg_rank_displacement": 1.0,
-            "max_rank_displacement": 3
-          },
-          "hybrid_vs_fair_rerank": {
-            "kendall_tau": 0.8667,
-            "avg_rank_displacement": 0.33,
-            "max_rank_displacement": 1
-          }
+          "kendall_tau_tfidf_vs_hybrid": 0.4667
         },
-        "methodology_notes": [
-          "All metrics computed on standardized benchmark candidate cohorts.",
-          "EOD uses score-based qualification proxies when independent labels are not available.",
-          "Fairness thresholds are indicators and do not certify legal compliance."
-        ]
+        "counterfactual_summary": {
+          "max_score_delta": 0.04,
+          "mean_abs_delta": 0.0167,
+          "mean_relative_delta_pct": 0.0306,
+          "rank_flips_count": 0,
+          "max_rank_displacement": 0,
+          "invariance_rate_pct": 100.0,
+          "is_counterfactually_fair": true
+        }
       }
     },
     "data_scientist": {
@@ -60,52 +127,119 @@
       "evaluation": {
         "candidate_count": 4,
         "top_k": 2,
+        "ground_truth_labels_used": false,
         "models": {
           "tfidf_baseline": {
             "disparate_impact_ratio": 1.0,
             "demographic_parity_diff": 0.0,
             "equal_opportunity_diff": 0.0,
-            "precision_at_k": 0.0,
+            "eod_valid": false,
             "four_fifths_compliant": true,
-            "theil_inequality_index": 0.0553
+            "precision_at_k": 0.0,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.0553,
+            "normalized_theil_index": 0.0399
           },
           "hybrid_ranking": {
             "disparate_impact_ratio": 1.0,
             "demographic_parity_diff": 0.0,
             "equal_opportunity_diff": 0.0,
-            "precision_at_k": 0.5,
+            "eod_valid": false,
             "four_fifths_compliant": true,
-            "theil_inequality_index": 0.0553
+            "precision_at_k": 0.5,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.0553,
+            "normalized_theil_index": 0.0399
           },
-          "fair_reranked_hybrid": {
+          "fair_reranked_moderate": {
+            "constraint_level": "moderate",
+            "deficit_threshold": 0.75,
             "disparate_impact_ratio": 1.0,
             "demographic_parity_diff": 0.0,
             "equal_opportunity_diff": 0.0,
+            "eod_valid": false,
+            "four_fifths_compliant": true,
             "precision_at_k": 0.5,
+            "recall_at_k": 1.0,
             "ndcg_at_k": 1.0,
             "utility_retention_pct": 100.0,
             "swaps_count": 0,
-            "four_fifths_compliant": true,
-            "theil_inequality_index": 0.0553
+            "avg_rank_shift": 0.0,
+            "max_rank_shift": 0,
+            "theil_inequality_index": 0.0553,
+            "normalized_theil_index": 0.0399
+          },
+          "fair_rerank_variants": {
+            "relaxed": {
+              "constraint_level": "relaxed",
+              "deficit_threshold": 1.0,
+              "disparate_impact_ratio": 1.0,
+              "demographic_parity_diff": 0.0,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": false,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.5,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 1.0,
+              "utility_retention_pct": 100.0,
+              "swaps_count": 0,
+              "avg_rank_shift": 0.0,
+              "max_rank_shift": 0,
+              "theil_inequality_index": 0.0553,
+              "normalized_theil_index": 0.0399
+            },
+            "moderate": {
+              "constraint_level": "moderate",
+              "deficit_threshold": 0.75,
+              "disparate_impact_ratio": 1.0,
+              "demographic_parity_diff": 0.0,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": false,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.5,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 1.0,
+              "utility_retention_pct": 100.0,
+              "swaps_count": 0,
+              "avg_rank_shift": 0.0,
+              "max_rank_shift": 0,
+              "theil_inequality_index": 0.0553,
+              "normalized_theil_index": 0.0399
+            },
+            "strict": {
+              "constraint_level": "strict",
+              "deficit_threshold": 0.5,
+              "disparate_impact_ratio": 1.0,
+              "demographic_parity_diff": 0.0,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": false,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.5,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 1.0,
+              "utility_retention_pct": 98.73,
+              "swaps_count": 2,
+              "avg_rank_shift": 0.5,
+              "max_rank_shift": 1,
+              "theil_inequality_index": 0.0553,
+              "normalized_theil_index": 0.0399
+            }
           }
         },
         "stability": {
-          "tfidf_vs_hybrid": {
-            "kendall_tau": 0.6667,
-            "avg_rank_displacement": 0.5,
-            "max_rank_displacement": 1
-          },
-          "hybrid_vs_fair_rerank": {
-            "kendall_tau": 1.0,
-            "avg_rank_displacement": 0.0,
-            "max_rank_displacement": 0
-          }
+          "kendall_tau_tfidf_vs_hybrid": 0.6667
         },
-        "methodology_notes": [
-          "All metrics computed on standardized benchmark candidate cohorts.",
-          "EOD uses score-based qualification proxies when independent labels are not available.",
-          "Fairness thresholds are indicators and do not certify legal compliance."
-        ]
+        "counterfactual_summary": {
+          "max_score_delta": 0.0,
+          "mean_abs_delta": 0.0,
+          "mean_relative_delta_pct": 0.0,
+          "rank_flips_count": 0,
+          "max_rank_displacement": 0,
+          "invariance_rate_pct": 100.0,
+          "is_counterfactually_fair": true
+        }
       }
     },
     "fullstack_cloud_cohort": {
@@ -113,52 +247,846 @@
       "evaluation": {
         "candidate_count": 6,
         "top_k": 3,
+        "ground_truth_labels_used": false,
         "models": {
           "tfidf_baseline": {
             "disparate_impact_ratio": 1.0,
             "demographic_parity_diff": 0.0,
             "equal_opportunity_diff": 0.0,
-            "precision_at_k": 0.0,
+            "eod_valid": false,
             "four_fifths_compliant": true,
-            "theil_inequality_index": 0.0714
+            "precision_at_k": 0.0,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.0714,
+            "normalized_theil_index": 0.0398
           },
           "hybrid_ranking": {
             "disparate_impact_ratio": 1.0,
             "demographic_parity_diff": 0.0,
             "equal_opportunity_diff": 0.0,
-            "precision_at_k": 1.0,
+            "eod_valid": false,
             "four_fifths_compliant": true,
-            "theil_inequality_index": 0.0714
+            "precision_at_k": 1.0,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.0714,
+            "normalized_theil_index": 0.0398
           },
-          "fair_reranked_hybrid": {
+          "fair_reranked_moderate": {
+            "constraint_level": "moderate",
+            "deficit_threshold": 0.75,
             "disparate_impact_ratio": 1.0,
             "demographic_parity_diff": 0.0,
             "equal_opportunity_diff": 0.0,
+            "eod_valid": false,
+            "four_fifths_compliant": true,
             "precision_at_k": 1.0,
+            "recall_at_k": 1.0,
             "ndcg_at_k": 1.0,
             "utility_retention_pct": 100.0,
             "swaps_count": 0,
-            "four_fifths_compliant": true,
-            "theil_inequality_index": 0.0714
+            "avg_rank_shift": 0.0,
+            "max_rank_shift": 0,
+            "theil_inequality_index": 0.0714,
+            "normalized_theil_index": 0.0398
+          },
+          "fair_rerank_variants": {
+            "relaxed": {
+              "constraint_level": "relaxed",
+              "deficit_threshold": 1.0,
+              "disparate_impact_ratio": 1.0,
+              "demographic_parity_diff": 0.0,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": false,
+              "four_fifths_compliant": true,
+              "precision_at_k": 1.0,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 1.0,
+              "utility_retention_pct": 100.0,
+              "swaps_count": 0,
+              "avg_rank_shift": 0.0,
+              "max_rank_shift": 0,
+              "theil_inequality_index": 0.0714,
+              "normalized_theil_index": 0.0398
+            },
+            "moderate": {
+              "constraint_level": "moderate",
+              "deficit_threshold": 0.75,
+              "disparate_impact_ratio": 1.0,
+              "demographic_parity_diff": 0.0,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": false,
+              "four_fifths_compliant": true,
+              "precision_at_k": 1.0,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 1.0,
+              "utility_retention_pct": 100.0,
+              "swaps_count": 0,
+              "avg_rank_shift": 0.0,
+              "max_rank_shift": 0,
+              "theil_inequality_index": 0.0714,
+              "normalized_theil_index": 0.0398
+            },
+            "strict": {
+              "constraint_level": "strict",
+              "deficit_threshold": 0.5,
+              "disparate_impact_ratio": 1.0,
+              "demographic_parity_diff": 0.0,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": false,
+              "four_fifths_compliant": true,
+              "precision_at_k": 1.0,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 1.0,
+              "utility_retention_pct": 99.74,
+              "swaps_count": 2,
+              "avg_rank_shift": 0.33,
+              "max_rank_shift": 1,
+              "theil_inequality_index": 0.0714,
+              "normalized_theil_index": 0.0398
+            }
           }
         },
         "stability": {
-          "tfidf_vs_hybrid": {
-            "kendall_tau": 0.8667,
-            "avg_rank_displacement": 0.33,
-            "max_rank_displacement": 1
+          "kendall_tau_tfidf_vs_hybrid": 0.8667
+        },
+        "counterfactual_summary": {
+          "max_score_delta": 0.09,
+          "mean_abs_delta": 0.015,
+          "mean_relative_delta_pct": 0.0244,
+          "rank_flips_count": 0,
+          "max_rank_displacement": 0,
+          "invariance_rate_pct": 100.0,
+          "is_counterfactually_fair": true
+        }
+      }
+    }
+  },
+  "synthetic_large_scale_benchmark": {
+    "N_100": {
+      "cohort_size": 100,
+      "seeds_evaluated": [
+        42,
+        123,
+        999
+      ],
+      "aggregated_metrics": {
+        "tfidf_baseline": {
+          "disparate_impact_ratio": {
+            "mean": 0.7747,
+            "std": 0.0715,
+            "min": 0.675,
+            "max": 0.839
           },
-          "hybrid_vs_fair_rerank": {
-            "kendall_tau": 1.0,
-            "avg_rank_displacement": 0.0,
-            "max_rank_displacement": 0
+          "demographic_parity_diff": {
+            "mean": 0.128,
+            "std": 0.0477,
+            "min": 0.088,
+            "max": 0.195
+          },
+          "equal_opportunity_diff": {
+            "mean": 0.889,
+            "std": 0.157,
+            "min": 0.667,
+            "max": 1.0
+          },
+          "precision_at_k": {
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "recall_at_k": {
+            "mean": 0.689,
+            "std": 0.1356,
+            "min": 0.5556,
+            "max": 0.875
+          },
+          "ndcg_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
           }
         },
-        "methodology_notes": [
-          "All metrics computed on standardized benchmark candidate cohorts.",
-          "EOD uses score-based qualification proxies when independent labels are not available.",
-          "Fairness thresholds are indicators and do not certify legal compliance."
-        ]
+        "hybrid_ranking": {
+          "disparate_impact_ratio": {
+            "mean": 0.6487,
+            "std": 0.1158,
+            "min": 0.544,
+            "max": 0.81
+          },
+          "demographic_parity_diff": {
+            "mean": 0.2283,
+            "std": 0.0927,
+            "min": 0.101,
+            "max": 0.319
+          },
+          "equal_opportunity_diff": {
+            "mean": 0.6667,
+            "std": 0.4714,
+            "min": 0.0,
+            "max": 1.0
+          },
+          "precision_at_k": {
+            "mean": 0.14,
+            "std": 0.0432,
+            "min": 0.1,
+            "max": 0.2
+          },
+          "recall_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          },
+          "ndcg_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          }
+        },
+        "fair_reranked_moderate": {
+          "disparate_impact_ratio": {
+            "mean": 0.8777,
+            "std": 0.0884,
+            "min": 0.794,
+            "max": 1.0
+          },
+          "demographic_parity_diff": {
+            "mean": 0.0707,
+            "std": 0.0521,
+            "min": 0.0,
+            "max": 0.124
+          },
+          "equal_opportunity_diff": {
+            "mean": 0.6667,
+            "std": 0.4714,
+            "min": 0.0,
+            "max": 1.0
+          },
+          "precision_at_k": {
+            "mean": 0.14,
+            "std": 0.0432,
+            "min": 0.1,
+            "max": 0.2
+          },
+          "recall_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          },
+          "ndcg_at_k": {
+            "mean": 0.9973,
+            "std": 0.0007,
+            "min": 0.9965,
+            "max": 0.9983
+          },
+          "utility_retention_pct": {
+            "mean": 99.8967,
+            "std": 0.0094,
+            "min": 99.89,
+            "max": 99.91
+          }
+        }
+      },
+      "sample_seed_run": {
+        "candidate_count": 100,
+        "top_k": 50,
+        "ground_truth_labels_used": true,
+        "models": {
+          "tfidf_baseline": {
+            "disparate_impact_ratio": 0.839,
+            "demographic_parity_diff": 0.088,
+            "equal_opportunity_diff": 1.0,
+            "eod_valid": true,
+            "four_fifths_compliant": true,
+            "precision_at_k": 0.0,
+            "recall_at_k": 0.875,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.0886,
+            "normalized_theil_index": 0.0192
+          },
+          "hybrid_ranking": {
+            "disparate_impact_ratio": 0.592,
+            "demographic_parity_diff": 0.265,
+            "equal_opportunity_diff": 1.0,
+            "eod_valid": true,
+            "four_fifths_compliant": false,
+            "precision_at_k": 0.12,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.0886,
+            "normalized_theil_index": 0.0192
+          },
+          "fair_reranked_moderate": {
+            "constraint_level": "moderate",
+            "deficit_threshold": 0.75,
+            "disparate_impact_ratio": 0.839,
+            "demographic_parity_diff": 0.088,
+            "equal_opportunity_diff": 1.0,
+            "eod_valid": true,
+            "four_fifths_compliant": true,
+            "precision_at_k": 0.12,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 0.9971,
+            "utility_retention_pct": 99.89,
+            "swaps_count": 82,
+            "avg_rank_shift": 3.52,
+            "max_rank_shift": 17,
+            "theil_inequality_index": 0.0886,
+            "normalized_theil_index": 0.0192
+          },
+          "fair_rerank_variants": {
+            "relaxed": {
+              "constraint_level": "relaxed",
+              "deficit_threshold": 1.0,
+              "disparate_impact_ratio": 0.839,
+              "demographic_parity_diff": 0.088,
+              "equal_opportunity_diff": 1.0,
+              "eod_valid": true,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.12,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 0.9976,
+              "utility_retention_pct": 99.93,
+              "swaps_count": 76,
+              "avg_rank_shift": 2.8,
+              "max_rank_shift": 16,
+              "theil_inequality_index": 0.0886,
+              "normalized_theil_index": 0.0192
+            },
+            "moderate": {
+              "constraint_level": "moderate",
+              "deficit_threshold": 0.75,
+              "disparate_impact_ratio": 0.839,
+              "demographic_parity_diff": 0.088,
+              "equal_opportunity_diff": 1.0,
+              "eod_valid": true,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.12,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 0.9971,
+              "utility_retention_pct": 99.89,
+              "swaps_count": 82,
+              "avg_rank_shift": 3.52,
+              "max_rank_shift": 17,
+              "theil_inequality_index": 0.0886,
+              "normalized_theil_index": 0.0192
+            },
+            "strict": {
+              "constraint_level": "strict",
+              "deficit_threshold": 0.5,
+              "disparate_impact_ratio": 0.899,
+              "demographic_parity_diff": 0.055,
+              "equal_opportunity_diff": 1.0,
+              "eod_valid": true,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.12,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 0.9944,
+              "utility_retention_pct": 99.83,
+              "swaps_count": 90,
+              "avg_rank_shift": 4.2,
+              "max_rank_shift": 20,
+              "theil_inequality_index": 0.0886,
+              "normalized_theil_index": 0.0192
+            }
+          }
+        },
+        "stability": {
+          "kendall_tau_tfidf_vs_hybrid": 0.3285
+        },
+        "counterfactual_summary": {
+          "max_score_delta": 0.0,
+          "mean_abs_delta": 0.0,
+          "mean_relative_delta_pct": 0.0,
+          "rank_flips_count": 0,
+          "max_rank_displacement": 0,
+          "invariance_rate_pct": 100.0,
+          "is_counterfactually_fair": true
+        }
+      }
+    },
+    "N_250": {
+      "cohort_size": 250,
+      "seeds_evaluated": [
+        42,
+        123,
+        999
+      ],
+      "aggregated_metrics": {
+        "tfidf_baseline": {
+          "disparate_impact_ratio": {
+            "mean": 0.801,
+            "std": 0.0589,
+            "min": 0.747,
+            "max": 0.883
+          },
+          "demographic_parity_diff": {
+            "mean": 0.111,
+            "std": 0.0328,
+            "min": 0.065,
+            "max": 0.139
+          },
+          "equal_opportunity_diff": {
+            "mean": 0.3887,
+            "std": 0.0787,
+            "min": 0.333,
+            "max": 0.5
+          },
+          "precision_at_k": {
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "recall_at_k": {
+            "mean": 0.7174,
+            "std": 0.0784,
+            "min": 0.6364,
+            "max": 0.8235
+          },
+          "ndcg_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          }
+        },
+        "hybrid_ranking": {
+          "disparate_impact_ratio": {
+            "mean": 0.7757,
+            "std": 0.078,
+            "min": 0.666,
+            "max": 0.841
+          },
+          "demographic_parity_diff": {
+            "mean": 0.1347,
+            "std": 0.0562,
+            "min": 0.09,
+            "max": 0.214
+          },
+          "equal_opportunity_diff": {
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "precision_at_k": {
+            "mean": 0.112,
+            "std": 0.0392,
+            "min": 0.064,
+            "max": 0.16
+          },
+          "recall_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          },
+          "ndcg_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          }
+        },
+        "fair_reranked_moderate": {
+          "disparate_impact_ratio": {
+            "mean": 0.9323,
+            "std": 0.0242,
+            "min": 0.901,
+            "max": 0.96
+          },
+          "demographic_parity_diff": {
+            "mean": 0.0357,
+            "std": 0.0135,
+            "min": 0.02,
+            "max": 0.053
+          },
+          "equal_opportunity_diff": {
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "precision_at_k": {
+            "mean": 0.112,
+            "std": 0.0392,
+            "min": 0.064,
+            "max": 0.16
+          },
+          "recall_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          },
+          "ndcg_at_k": {
+            "mean": 0.999,
+            "std": 0.0004,
+            "min": 0.9984,
+            "max": 0.9993
+          },
+          "utility_retention_pct": {
+            "mean": 99.9667,
+            "std": 0.0205,
+            "min": 99.94,
+            "max": 99.99
+          }
+        }
+      },
+      "sample_seed_run": {
+        "candidate_count": 250,
+        "top_k": 125,
+        "ground_truth_labels_used": true,
+        "models": {
+          "tfidf_baseline": {
+            "disparate_impact_ratio": 0.773,
+            "demographic_parity_diff": 0.129,
+            "equal_opportunity_diff": 0.333,
+            "eod_valid": true,
+            "four_fifths_compliant": false,
+            "precision_at_k": 0.0,
+            "recall_at_k": 0.8235,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.0695,
+            "normalized_theil_index": 0.0126
+          },
+          "hybrid_ranking": {
+            "disparate_impact_ratio": 0.82,
+            "demographic_parity_diff": 0.1,
+            "equal_opportunity_diff": 0.0,
+            "eod_valid": true,
+            "four_fifths_compliant": true,
+            "precision_at_k": 0.112,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.0695,
+            "normalized_theil_index": 0.0126
+          },
+          "fair_reranked_moderate": {
+            "constraint_level": "moderate",
+            "deficit_threshold": 0.75,
+            "disparate_impact_ratio": 0.936,
+            "demographic_parity_diff": 0.034,
+            "equal_opportunity_diff": 0.0,
+            "eod_valid": true,
+            "four_fifths_compliant": true,
+            "precision_at_k": 0.112,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 0.9993,
+            "utility_retention_pct": 99.99,
+            "swaps_count": 234,
+            "avg_rank_shift": 6.37,
+            "max_rank_shift": 31,
+            "theil_inequality_index": 0.0695,
+            "normalized_theil_index": 0.0126
+          },
+          "fair_rerank_variants": {
+            "relaxed": {
+              "constraint_level": "relaxed",
+              "deficit_threshold": 1.0,
+              "disparate_impact_ratio": 0.936,
+              "demographic_parity_diff": 0.034,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": true,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.112,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 0.9993,
+              "utility_retention_pct": 99.99,
+              "swaps_count": 222,
+              "avg_rank_shift": 5.62,
+              "max_rank_shift": 29,
+              "theil_inequality_index": 0.0695,
+              "normalized_theil_index": 0.0126
+            },
+            "moderate": {
+              "constraint_level": "moderate",
+              "deficit_threshold": 0.75,
+              "disparate_impact_ratio": 0.936,
+              "demographic_parity_diff": 0.034,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": true,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.112,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 0.9993,
+              "utility_retention_pct": 99.99,
+              "swaps_count": 234,
+              "avg_rank_shift": 6.37,
+              "max_rank_shift": 31,
+              "theil_inequality_index": 0.0695,
+              "normalized_theil_index": 0.0126
+            },
+            "strict": {
+              "constraint_level": "strict",
+              "deficit_threshold": 0.5,
+              "disparate_impact_ratio": 0.978,
+              "demographic_parity_diff": 0.011,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": true,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.112,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 0.9986,
+              "utility_retention_pct": 99.96,
+              "swaps_count": 238,
+              "avg_rank_shift": 7.08,
+              "max_rank_shift": 33,
+              "theil_inequality_index": 0.0695,
+              "normalized_theil_index": 0.0126
+            }
+          }
+        },
+        "stability": {
+          "kendall_tau_tfidf_vs_hybrid": 0.3848
+        },
+        "counterfactual_summary": null
+      }
+    },
+    "N_500": {
+      "cohort_size": 500,
+      "seeds_evaluated": [
+        42,
+        123,
+        999
+      ],
+      "aggregated_metrics": {
+        "tfidf_baseline": {
+          "disparate_impact_ratio": {
+            "mean": 0.8453,
+            "std": 0.0237,
+            "min": 0.813,
+            "max": 0.869
+          },
+          "demographic_parity_diff": {
+            "mean": 0.086,
+            "std": 0.0159,
+            "min": 0.071,
+            "max": 0.108
+          },
+          "equal_opportunity_diff": {
+            "mean": 0.374,
+            "std": 0.05,
+            "min": 0.304,
+            "max": 0.418
+          },
+          "precision_at_k": {
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "recall_at_k": {
+            "mean": 0.7,
+            "std": 0.055,
+            "min": 0.6327,
+            "max": 0.7674
+          },
+          "ndcg_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          }
+        },
+        "hybrid_ranking": {
+          "disparate_impact_ratio": {
+            "mean": 0.836,
+            "std": 0.0142,
+            "min": 0.816,
+            "max": 0.847
+          },
+          "demographic_parity_diff": {
+            "mean": 0.0933,
+            "std": 0.0097,
+            "min": 0.085,
+            "max": 0.107
+          },
+          "equal_opportunity_diff": {
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "precision_at_k": {
+            "mean": 0.088,
+            "std": 0.0142,
+            "min": 0.068,
+            "max": 0.1
+          },
+          "recall_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          },
+          "ndcg_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          }
+        },
+        "fair_reranked_moderate": {
+          "disparate_impact_ratio": {
+            "mean": 0.9587,
+            "std": 0.0066,
+            "min": 0.95,
+            "max": 0.966
+          },
+          "demographic_parity_diff": {
+            "mean": 0.0213,
+            "std": 0.0034,
+            "min": 0.018,
+            "max": 0.026
+          },
+          "equal_opportunity_diff": {
+            "mean": 0.0,
+            "std": 0.0,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "precision_at_k": {
+            "mean": 0.088,
+            "std": 0.0142,
+            "min": 0.068,
+            "max": 0.1
+          },
+          "recall_at_k": {
+            "mean": 1.0,
+            "std": 0.0,
+            "min": 1.0,
+            "max": 1.0
+          },
+          "ndcg_at_k": {
+            "mean": 0.9993,
+            "std": 0.0003,
+            "min": 0.9989,
+            "max": 0.9996
+          },
+          "utility_retention_pct": {
+            "mean": 99.9667,
+            "std": 0.0125,
+            "min": 99.95,
+            "max": 99.98
+          }
+        }
+      },
+      "sample_seed_run": {
+        "candidate_count": 500,
+        "top_k": 250,
+        "ground_truth_labels_used": true,
+        "models": {
+          "tfidf_baseline": {
+            "disparate_impact_ratio": 0.869,
+            "demographic_parity_diff": 0.071,
+            "equal_opportunity_diff": 0.304,
+            "eod_valid": true,
+            "four_fifths_compliant": true,
+            "precision_at_k": 0.0,
+            "recall_at_k": 0.7,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.055,
+            "normalized_theil_index": 0.0089
+          },
+          "hybrid_ranking": {
+            "disparate_impact_ratio": 0.845,
+            "demographic_parity_diff": 0.088,
+            "equal_opportunity_diff": 0.0,
+            "eod_valid": true,
+            "four_fifths_compliant": true,
+            "precision_at_k": 0.1,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 1.0,
+            "theil_inequality_index": 0.055,
+            "normalized_theil_index": 0.0089
+          },
+          "fair_reranked_moderate": {
+            "constraint_level": "moderate",
+            "deficit_threshold": 0.75,
+            "disparate_impact_ratio": 0.96,
+            "demographic_parity_diff": 0.02,
+            "equal_opportunity_diff": 0.0,
+            "eod_valid": true,
+            "four_fifths_compliant": true,
+            "precision_at_k": 0.1,
+            "recall_at_k": 1.0,
+            "ndcg_at_k": 0.9993,
+            "utility_retention_pct": 99.97,
+            "swaps_count": 481,
+            "avg_rank_shift": 9.58,
+            "max_rank_shift": 44,
+            "theil_inequality_index": 0.055,
+            "normalized_theil_index": 0.0089
+          },
+          "fair_rerank_variants": {
+            "relaxed": {
+              "constraint_level": "relaxed",
+              "deficit_threshold": 1.0,
+              "disparate_impact_ratio": 0.96,
+              "demographic_parity_diff": 0.02,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": true,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.1,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 0.9994,
+              "utility_retention_pct": 99.98,
+              "swaps_count": 475,
+              "avg_rank_shift": 8.92,
+              "max_rank_shift": 38,
+              "theil_inequality_index": 0.055,
+              "normalized_theil_index": 0.0089
+            },
+            "moderate": {
+              "constraint_level": "moderate",
+              "deficit_threshold": 0.75,
+              "disparate_impact_ratio": 0.96,
+              "demographic_parity_diff": 0.02,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": true,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.1,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 0.9993,
+              "utility_retention_pct": 99.97,
+              "swaps_count": 481,
+              "avg_rank_shift": 9.58,
+              "max_rank_shift": 44,
+              "theil_inequality_index": 0.055,
+              "normalized_theil_index": 0.0089
+            },
+            "strict": {
+              "constraint_level": "strict",
+              "deficit_threshold": 0.5,
+              "disparate_impact_ratio": 0.98,
+              "demographic_parity_diff": 0.01,
+              "equal_opportunity_diff": 0.0,
+              "eod_valid": true,
+              "four_fifths_compliant": true,
+              "precision_at_k": 0.1,
+              "recall_at_k": 1.0,
+              "ndcg_at_k": 0.9991,
+              "utility_retention_pct": 99.96,
+              "swaps_count": 484,
+              "avg_rank_shift": 10.41,
+              "max_rank_shift": 44,
+              "theil_inequality_index": 0.055,
+              "normalized_theil_index": 0.0089
+            }
+          }
+        },
+        "stability": {
+          "kendall_tau_tfidf_vs_hybrid": 0.3504
+        },
+        "counterfactual_summary": null
       }
     }
   }

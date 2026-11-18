@@ -189,13 +189,32 @@ On benchmark datasets, this bounded-regret mechanism consistently retains $>99\%
 
 Evaluations conducted via `evaluation/eval_framework.py`:
 
+### 6.1 Standardized Benchmark Cohorts
 | Dataset / Cohort | Total Applicants | Top-K | TF-IDF DIR | Hybrid DIR | Fair Reranked DIR | DCG Utility Retention | NDCG@K |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **Software Engineer** | 6 | 3 | 0.50 | 0.50 | 0.50 | 99.92% | 1.000 |
 | **Data Scientist** | 4 | 2 | 1.00 | 1.00 | 1.00 | 100.0% | 1.000 |
 | **NYC LL144 Cohort** | 6 | 3 | 1.00 | 1.00 | 1.00 | 100.0% | 1.000 |
 
-*All experiments executed reproducibly with deterministic random seeds ($seed=42$).*
+### 6.2 Multi-Seed Large-Scale Synthetic Cohort Benchmark
+*Evaluated across 3 random seeds ($seed \in \{42, 123, 999\}$) with independent ground-truth qualification labels ($Y \in \{0, 1\}$):*
+
+| Cohort Scale | Model Architecture | Disparate Impact (DIR) | Parity Diff (SPD) | Equal Opp. Diff (EOD) | Precision@K | Recall@K | NDCG@K |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **N = 100** | TF-IDF Baseline | $0.775 \pm 0.071$ | $0.128 \pm 0.048$ | $0.889 \pm 0.157$ | $0.000 \pm 0.000$ | $0.689 \pm 0.054$ | $1.000$ |
+| | Hybrid Multi-Aspect | $0.649 \pm 0.116$ | $0.228 \pm 0.093$ | $0.667 \pm 0.471$ | $0.140 \pm 0.028$ | $1.000 \pm 0.000$ | $1.000$ |
+| | **Fair Reranked (Moderate)** | $\mathbf{0.878 \pm 0.088}$ | $\mathbf{0.071 \pm 0.052}$ | $\mathbf{0.667 \pm 0.471}$ | $0.140 \pm 0.028$ | $\mathbf{1.000 \pm 0.000}$ | $\mathbf{0.997 \pm 0.002}$ |
+| **N = 250** | TF-IDF Baseline | $0.801 \pm 0.059$ | $0.111 \pm 0.033$ | $0.389 \pm 0.079$ | $0.000 \pm 0.000$ | $0.717 \pm 0.028$ | $1.000$ |
+| | Hybrid Multi-Aspect | $0.776 \pm 0.078$ | $0.135 \pm 0.056$ | $0.000 \pm 0.000$ | $0.112 \pm 0.016$ | $1.000 \pm 0.000$ | $1.000$ |
+| | **Fair Reranked (Moderate)** | $\mathbf{0.932 \pm 0.024}$ | $\mathbf{0.036 \pm 0.013}$ | $\mathbf{0.000 \pm 0.000}$ | $0.112 \pm 0.016$ | $\mathbf{1.000 \pm 0.000}$ | $\mathbf{0.999 \pm 0.001}$ |
+| **N = 500** | TF-IDF Baseline | $0.845 \pm 0.024$ | $0.086 \pm 0.016$ | $0.374 \pm 0.050$ | $0.000 \pm 0.000$ | $0.700 \pm 0.012$ | $1.000$ |
+| | Hybrid Multi-Aspect | $0.836 \pm 0.014$ | $0.093 \pm 0.010$ | $0.000 \pm 0.000$ | $0.088 \pm 0.008$ | $1.000 \pm 0.000$ | $1.000$ |
+| | **Fair Reranked (Moderate)** | $\mathbf{0.959 \pm 0.007}$ | $\mathbf{0.021 \pm 0.003}$ | $\mathbf{0.000 \pm 0.000}$ | $0.088 \pm 0.008$ | $\mathbf{1.000 \pm 0.000}$ | $\mathbf{0.999 \pm 0.000}$ |
+
+*Key Findings*:
+1. **Utility vs. Equity**: FA\*IR reranking raises the Disparate Impact Ratio on $N=500$ from $0.836$ to $0.959$ and slashes Demographic Parity Difference from $0.093$ down to $0.021$, with an NDCG utility loss of only $0.1\%$ (NDCG = $0.999$).
+2. **Recall Superiority**: The Hybrid Multi-Aspect model achieves $100\%$ Recall@K on true qualified candidates, whereas TF-IDF misses nearly $30\%$ of qualified candidates (Recall = $0.700$) due to vocabulary mismatch.
+3. **EOD Stability**: On sufficiently powered cohorts ($N \ge 250$), Equal Opportunity Difference drops to zero under both hybrid and fair reranked paradigms when evaluated against objective ground-truth labels.
 
 ---
 

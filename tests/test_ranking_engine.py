@@ -9,6 +9,8 @@ from core.ranking_engine import (
     calculate_dcg,
     calculate_ndcg,
     calculate_precision_at_k,
+    calculate_recall_at_k,
+    compare_fair_rerank_constraints,
     SEMANTIC_AVAILABLE,
 )
 
@@ -169,3 +171,87 @@ def test_ndcg_and_precision_calculation():
 
 def test_semantic_flag_present():
     assert isinstance(SEMANTIC_AVAILABLE, bool)
+
+
+def test_missing_info_strategies():
+    jd = "Python engineer with PostgreSQL. Bachelor's required."
+    candidates = [
+        {
+            "candidate_id": "C1",
+            "name": "No Degree Listed",
+            "qualifications": "Python and PostgreSQL specialist with 5 years experience.",
+            "audit_group": "Group A"
+        }
+    ]
+
+    # Rebalance: missing education does NOT receive a 0.0 punitive penalty
+    ranked_rebal = score_candidates_advanced(jd, candidates, missing_info_strategy="rebalance")
+    cand_rebal = ranked_rebal[0]
+    assert cand_rebal["missing_info_handled"] is True
+    assert cand_rebal["missing_info_rebalanced"] is True
+    assert cand_rebal["effective_weights"]["education"] == 0.0
+    assert cand_rebal["effective_weights"]["skills"] > cand_rebal["weights_used"]["skills"]
+    assert cand_rebal["score"] > 60.0
+
+    # Neutral: missing education receives 50.0 neutral midpoint
+    ranked_neutral = score_candidates_advanced(jd, candidates, missing_info_strategy="neutral")
+    cand_neutral = ranked_neutral[0]
+    assert cand_neutral["aspect_scores"]["education_fit"] == 50.0
+
+    # Zero: missing education receives strict 0.0
+    ranked_zero = score_candidates_advanced(jd, candidates, missing_info_strategy="zero")
+    cand_zero = ranked_zero[0]
+    assert cand_zero["aspect_scores"]["education_fit"] == 0.0
+    assert cand_rebal["score"] > cand_zero["score"]
+
+
+def test_calculate_recall_at_k():
+    ranked = [
+        {"candidate_id": "C1", "score": 90.0},
+        {"candidate_id": "C2", "score": 80.0},
+        {"candidate_id": "C3", "score": 70.0},
+        {"candidate_id": "C4", "score": 50.0},
+    ]
+
+    # With independent ground truth
+    gt_ids = {"C1", "C3"}
+    recall_top2 = calculate_recall_at_k(ranked, k=2, ground_truth_relevant_ids=gt_ids)
+    assert recall_top2 == 0.5  # 1 out of 2 found
+
+    recall_top3 = calculate_recall_at_k(ranked, k=3, ground_truth_relevant_ids=gt_ids)
+    assert recall_top3 == 1.0  # both C1 and C3 found in top 3
+
+    # With threshold
+    rec_thresh = calculate_recall_at_k(ranked, k=2, threshold=70.0)
+    assert rec_thresh == round(2 / 3, 4)
+
+
+def test_compare_fair_rerank_constraints():
+    candidates = [
+        {"candidate_id": "C1", "score": 95.0, "rank": 1, "audit_group": "Group A"},
+        {"candidate_id": "C2", "score": 90.0, "rank": 2, "audit_group": "Group A"},
+        {"candidate_id": "C3", "score": 88.0, "rank": 3, "audit_group": "Group A"},
+        {"candidate_id": "C4", "score": 82.0, "rank": 4, "audit_group": "Group B"},
+        {"candidate_id": "C5", "score": 80.0, "rank": 5, "audit_group": "Group B"},
+    ]
+
+    res = compare_fair_rerank_constraints(candidates, group_key="audit_group", top_k=3)
+    assert "comparison_table" in res
+    assert len(res["comparison_table"]) == 4  # Standard + Relaxed + Moderate + Strict
+    settings = [r["constraint_level"] for r in res["comparison_table"]]
+    assert settings == ["none", "relaxed", "moderate", "strict"]
+
+
+def test_fair_rerank_constraint_levels():
+    candidates = [
+        {"candidate_id": "C1", "score": 95.0, "rank": 1, "audit_group": "Group A"},
+        {"candidate_id": "C2", "score": 90.0, "rank": 2, "audit_group": "Group A"},
+        {"candidate_id": "C3", "score": 85.0, "rank": 3, "audit_group": "Group B"},
+        {"candidate_id": "C4", "score": 80.0, "rank": 4, "audit_group": "Group B"},
+    ]
+
+    rerank_strict = fair_rerank(candidates, constraint_level="strict")
+    assert rerank_strict["deficit_threshold_used"] == 0.50
+
+    rerank_relaxed = fair_rerank(candidates, constraint_level="relaxed")
+    assert rerank_relaxed["deficit_threshold_used"] == 1.00

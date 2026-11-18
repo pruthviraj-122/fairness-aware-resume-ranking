@@ -82,3 +82,43 @@ def test_run_counterfactual_audit_invariance():
 def test_counterfactual_audit_empty_candidates():
     result = run_counterfactual_audit("Some JD", [])
     assert "error" in result
+
+
+def test_controlled_variations_breakdown():
+    jd = "Python software engineer with Docker experience."
+    candidates = [
+        {
+            "candidate_id": "C1",
+            "name": "David",
+            "audit_group": "Group A",
+            "qualifications": "He is an active member of Society of Women Engineers with 5 years Python and Docker experience."
+        },
+        {
+            "candidate_id": "C2",
+            "name": "Sarah",
+            "audit_group": "Group B",
+            "qualifications": "She is an engineer with 4 years Python and Docker experience."
+        }
+    ]
+
+    audit = run_counterfactual_audit(jd, candidates)
+    assert "controlled_variations" in audit
+    vars_dict = audit["controlled_variations"]
+    assert "gender_pronouns" in vars_dict
+    assert "candidate_names" in vars_dict
+    assert "affinity_orgs" in vars_dict
+    assert "combined_multi_attribute" in vars_dict
+
+    # Check metrics structure
+    pronouns_m = vars_dict["gender_pronouns"]["metrics"]
+    assert "max_absolute_delta" in pronouns_m
+    assert "mean_relative_delta_pct" in pronouns_m
+    assert "is_invariant" in pronouns_m
+
+    # Check individual candidate metrics
+    ind = audit["individual_audits"][0]
+    assert "absolute_score_delta" in ind
+    assert "relative_score_delta" in ind
+    assert "relative_score_delta_pct" in ind
+    assert "rank_displacement" in ind
+    assert "fairness_taxonomy" in audit

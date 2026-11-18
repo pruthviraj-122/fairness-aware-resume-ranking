@@ -243,24 +243,47 @@
             </div>
 
             <!-- Configuration & Submission Row -->
-            <div class="ranking-options-bar">
-              <div>
-                <label class="form-label"><strong>Optimization Strategy:</strong></label>
-                <div class="radio-group">
-                  <label class="radio-label">
-                    <input type="radio" name="ranking_mode" value="standard" {% if ranking_mode != 'fair' %}checked{% endif %}>
-                    <span>Standard Multi-Aspect Hybrid Ranking</span>
-                  </label>
-                  <label class="radio-label">
-                    <input type="radio" name="ranking_mode" value="fair" {% if ranking_mode == 'fair' %}checked{% endif %}>
-                    <span>Fair Top-k Post-Processed Reranking (FA*IR)</span>
-                  </label>
+            <div class="ranking-options-bar" style="display:flex; flex-direction:column; gap:16px;">
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+                <div>
+                  <label class="form-label"><strong>Optimization Strategy:</strong></label>
+                  <div class="radio-group">
+                    <label class="radio-label">
+                      <input type="radio" name="ranking_mode" value="standard" {% if ranking_mode != 'fair' %}checked{% endif %}>
+                      <span>Standard Multi-Aspect Hybrid Ranking</span>
+                    </label>
+                    <label class="radio-label">
+                      <input type="radio" name="ranking_mode" value="fair" {% if ranking_mode == 'fair' %}checked{% endif %}>
+                      <span>Fair Top-k Post-Processed Reranking (FA*IR)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="form-label"><strong>Missing Credential Strategy:</strong></label>
+                  <select name="missing_info_strategy" class="form-select">
+                    <option value="rebalance" {% if missing_info_strategy == 'rebalance' %}selected{% endif %}>Proportional Weight Rebalance (Recommended — No Penalty)</option>
+                    <option value="neutral" {% if missing_info_strategy == 'neutral' %}selected{% endif %}>Neutral Baseline Imputation (50.0 Midpoint)</option>
+                    <option value="zero" {% if missing_info_strategy == 'zero' %}selected{% endif %}>Strict Zero-Point Deduction (0.0 Pts)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="form-label"><strong>FA*IR Constraint Sensitivity:</strong></label>
+                  <select name="constraint_level" class="form-select">
+                    <option value="moderate" {% if constraint_level == 'moderate' %}selected{% endif %}>Moderate Constraint (&tau; = 0.75, Balanced Utility &amp; Parity)</option>
+                    <option value="strict" {% if constraint_level == 'strict' %}selected{% endif %}>Strict Constraint (&tau; = 0.50, High Representation Guarantee)</option>
+                    <option value="relaxed" {% if constraint_level == 'relaxed' %}selected{% endif %}>Relaxed Constraint (&tau; = 1.00, High Ranking Utility)</option>
+                  </select>
                 </div>
               </div>
-              <button type="submit" name="action" value="rank" class="btn btn-primary btn-lg">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                Rank Candidates &amp; Execute Audit
-              </button>
+
+              <div style="display:flex; justify-content:flex-end;">
+                <button type="submit" name="action" value="rank" class="btn btn-primary btn-lg">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                  Rank Candidates &amp; Execute Audit
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -616,12 +639,12 @@
           <p class="metric-desc">Max score change observed under demographic text perturbation.</p>
         </div>
         <div class="metric-card">
-          <span class="metric-title">Score Consistency Rate</span>
+          <span class="metric-title">Mean Relative Delta</span>
           <div class="metric-value-row">
-            <span class="metric-number">{{ audit.metrics.score_consistency_pct }}%</span>
-            <span class="metric-tag tag-pass">&plusmn;1.0 Pt</span>
+            <span class="metric-number">{{ audit.metrics.mean_relative_delta_pct or '0.0' }}%</span>
+            <span class="metric-tag tag-pass">Relative Shift</span>
           </div>
-          <p class="metric-desc">Percentage of candidates whose scores shifted by 1.0 point or less.</p>
+          <p class="metric-desc">Average percentage shift relative to baseline score.</p>
         </div>
         <div class="metric-card">
           <span class="metric-title">Rank Order Flips</span>
@@ -634,12 +657,12 @@
           <p class="metric-desc">Count of candidates whose queue rank shifted purely due to demographic perturbation.</p>
         </div>
         <div class="metric-card">
-          <span class="metric-title">Name Isolation</span>
+          <span class="metric-title">Max Rank Displacement</span>
           <div class="metric-value-row">
-            <span class="metric-number">0.00</span>
-            <span class="metric-tag tag-pass">Isolated</span>
+            <span class="metric-number">{{ audit.metrics.max_rank_displacement or 0 }}</span>
+            <span class="metric-tag tag-pass">Positions</span>
           </div>
-          <p class="metric-desc">Candidate names and group tags are strictly isolated from scoring features.</p>
+          <p class="metric-desc">Maximum position displacement |r_orig - r_cf| across cohorts.</p>
         </div>
         <div class="metric-card">
           <span class="metric-title">Flagged Proxy Terms</span>
@@ -650,6 +673,58 @@
           <p class="metric-desc">Demographic proxy signals (early graduation years, affinity groups) found in resume text.</p>
         </div>
       </div>
+
+      <!-- Controlled Variations Breakdown -->
+      {% if audit.controlled_variations %}
+      <div class="card mt-4">
+        <div class="card-header">
+          <h3>Controlled Counterfactual Variations Summary</h3>
+          <span class="help-text">Independent evaluations isolating distinct demographic and linguistic signals</span>
+        </div>
+        <div class="card-body p-0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Controlled Variation</th>
+                <th>Target Tested</th>
+                <th>Max Score Delta</th>
+                <th>Mean Rel. Delta (%)</th>
+                <th>Rank Flips</th>
+                <th>Max Displacement</th>
+                <th>Invariance Rate</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for vkey, vdata in audit.controlled_variations.items() %}
+              <tr>
+                <td><strong>{{ vdata.variation_label }}</strong></td>
+                <td><small class="text-muted">{{ vdata.variation_key }}</small></td>
+                <td>{{ vdata.metrics.max_absolute_delta }} pts</td>
+                <td>{{ vdata.metrics.mean_relative_delta_pct }}%</td>
+                <td>
+                  {% if vdata.metrics.rank_flips_count == 0 %}
+                    <span class="badge badge-success">0</span>
+                  {% else %}
+                    <span class="badge badge-warning">{{ vdata.metrics.rank_flips_count }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ vdata.metrics.max_rank_displacement }} pos</td>
+                <td>{{ vdata.metrics.invariance_rate_pct }}%</td>
+                <td>
+                  {% if vdata.metrics.is_invariant %}
+                    <span class="text-success">&check; Invariant</span>
+                  {% else %}
+                    <span class="text-warning">&sim; Sensitive</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
 
       <!-- Individual Perturbation Invariance Table -->
       <div class="card mt-4">
@@ -664,9 +739,10 @@
                 <th>Baseline Score</th>
                 <th>Perturbed Score</th>
                 <th>Score Delta</th>
+                <th>Rel. Delta (%)</th>
                 <th>Baseline Rank</th>
                 <th>Perturbed Rank</th>
-                <th>Rank Shift</th>
+                <th>Displacement</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -681,13 +757,14 @@
                     {{ ind.score_delta }}
                   </span>
                 </td>
+                <td>{{ ind.relative_score_delta_pct or '0.0' }}%</td>
                 <td>#{{ ind.baseline_rank }}</td>
                 <td>#{{ ind.counterfactual_rank }}</td>
                 <td>
-                  {% if ind.rank_shift == 0 %}
+                  {% if ind.rank_displacement == 0 %}
                     <span class="badge badge-success">0</span>
                   {% else %}
-                    <span class="badge badge-warning">{{ ind.rank_shift }}</span>
+                    <span class="badge badge-warning">|&Delta;{{ ind.rank_displacement }}|</span>
                   {% endif %}
                 </td>
                 <td>
@@ -704,12 +781,30 @@
         </div>
       </div>
 
-      <!-- Limitations Card -->
+      <!-- Conceptual Taxonomy & Limitations Card -->
       <div class="card mt-4">
         <div class="card-header">
-          <h3>Audit Limitations &amp; Scope</h3>
+          <h3>Fairness Taxonomy &amp; Causal Limitations (Kusner et al., 2017)</h3>
         </div>
         <div class="card-body">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px;">
+            <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border-left: 3px solid #10b981;">
+              <strong>Direct Demographic Text Sensitivity</strong>
+              <p class="text-muted mt-1" style="font-size: 0.85rem;">Insensitivity to explicit gendered pronouns, honorifics, and title markers in qualifications prose.</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border-left: 3px solid #3b82f6;">
+              <strong>Candidate Name Isolation</strong>
+              <p class="text-muted mt-1" style="font-size: 0.85rem;">Audits first names associated with diverse cultural/racial backgrounds (Bertrand &amp; Mullainathan 2004).</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border-left: 3px solid #f59e0b;">
+              <strong>Proxy Attribute Sensitivity</strong>
+              <p class="text-muted mt-1" style="font-size: 0.85rem;">Scans for non-job institutional proxies (affinity organizations, HBCUs, fraternities, seniority years).</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border-left: 3px solid #8b5cf6;">
+              <strong>Broader Demographic Fairness</strong>
+              <p class="text-muted mt-1" style="font-size: 0.85rem;">Cohort-level distribution parity (DIR, SPD, EOD) across the full applicant pool.</p>
+            </div>
+          </div>
           <ul class="clean-list">
             {% for lim in audit.audit_limitations %}
             <li>{{ lim }}</li>
@@ -728,6 +823,58 @@
       </div>
 
       {% if fair_results %}
+      <!-- Pareto Frontier Sensitivity Comparison Table -->
+      {% if pareto_comparison and pareto_comparison.comparison_table %}
+      <div class="card mb-4">
+        <div class="card-header">
+          <h3>FA*IR Constraint Sensitivity &amp; Pareto Trade-Off Analysis</h3>
+          <span class="help-text">Empirical frontier comparing unconstrained ranking against Relaxed (&tau;=1.00), Moderate (&tau;=0.75), and Strict (&tau;=0.50) representation quotas</span>
+        </div>
+        <div class="card-body p-0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Constraint Setting</th>
+                <th>Deficit &tau;</th>
+                <th>Disparate Impact (DIR)</th>
+                <th>Parity Diff (SPD)</th>
+                <th>4/5ths Rule</th>
+                <th>DCG Utility Retention</th>
+                <th>NDCG@K</th>
+                <th>Swaps</th>
+                <th>Avg Displacement</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in pareto_comparison.comparison_table %}
+              <tr>
+                <td><strong>{{ row.setting }}</strong></td>
+                <td>{{ row.deficit_threshold if row.deficit_threshold is not none else 'None' }}</td>
+                <td>
+                  <strong class="{% if row.disparate_impact_ratio >= 0.80 %}text-success{% elif row.disparate_impact_ratio >= 0.65 %}text-warning{% else %}text-danger{% endif %}">
+                    {{ row.disparate_impact_ratio }}
+                  </strong>
+                </td>
+                <td>{{ row.demographic_parity_diff }}</td>
+                <td>
+                  {% if row.four_fifths_compliant %}
+                    <span class="badge badge-success">Compliant</span>
+                  {% else %}
+                    <span class="badge badge-warning">Adverse Impact</span>
+                  {% endif %}
+                </td>
+                <td>{{ row.dcg_utility_retention_pct }}%</td>
+                <td>{{ row.ndcg_at_k }}</td>
+                <td>{{ row.swaps_count }}</td>
+                <td>{{ row.avg_rank_displacement }} pos</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
       <div class="comparison-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <!-- Standard Ranking Column -->
         <div class="card">

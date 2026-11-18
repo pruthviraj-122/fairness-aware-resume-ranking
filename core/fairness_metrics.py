@@ -149,12 +149,17 @@ def calculate_exposure_disparity(
     exposure_diff = round(max_exp - min_exp, 4)
 
     theil_index = calculate_theil_index(all_individual_exposures)
+    n_exp = len(all_individual_exposures)
+    normalized_theil = (
+        round(theil_index / math.log(n_exp), 4) if n_exp > 1 and theil_index > 0 else 0.0
+    )
 
     return {
         "group_exposures": group_exposures,
         "exposure_ratio": exposure_ratio,
         "exposure_difference": exposure_diff,
         "theil_index": theil_index,
+        "normalized_theil_index": normalized_theil,
     }
 
 
@@ -411,6 +416,7 @@ def calculate_fairness_metrics(
             adaptive_threshold if not eod_valid else qualification_threshold, 1
         ),
         "theil_inequality_index": exposure_data["theil_index"],
+        "normalized_theil_index": exposure_data.get("normalized_theil_index", 0.0),
         "exposure_disparity": {
             "group_exposures": exposure_data["group_exposures"],
             "exposure_ratio": exposure_data["exposure_ratio"],

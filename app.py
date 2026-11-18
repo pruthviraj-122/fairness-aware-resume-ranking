@@ -41,6 +41,8 @@ from core.ranking_engine import (
     fair_rerank,
     calculate_ndcg,
     calculate_precision_at_k,
+    calculate_recall_at_k,
+    compare_fair_rerank_constraints,
     SEMANTIC_AVAILABLE,
 )
 from core.fairness_metrics import calculate_fairness_metrics
@@ -184,6 +186,9 @@ def index():
     top_k = None
     weights = None
     fair_result_obj = None
+    pareto_comparison = None
+    missing_info_strategy = "rebalance"
+    constraint_level = "moderate"
 
     # Form defaults for UI sliders
     ui_weights = {"skills": 40, "semantic": 30, "experience": 15, "education": 15}
@@ -192,6 +197,8 @@ def index():
         action = request.form.get("action", "rank")
         selected_sample = request.form.get("sample_preset", "")
         ranking_mode = request.form.get("ranking_mode", "standard")
+        missing_info_strategy = request.form.get("missing_info_strategy", "rebalance")
+        constraint_level = request.form.get("constraint_level", "moderate")
 
         # Parse custom weights
         custom_weights = parse_weights_from_request(request.form)
@@ -279,9 +286,12 @@ def index():
             error = "Please provide at least two candidates with qualifications (via text or file upload)."
         elif not error:
             try:
-                # 1. Advanced Multi-Aspect Hybrid Ranking
+                # 1. Advanced Multi-Aspect Hybrid Ranking with missing-information handling
                 ranked = score_candidates_advanced(
-                    job_description, valid_candidates, weights=weights
+                    job_description,
+                    valid_candidates,
+                    weights=weights,
+                    missing_info_strategy=missing_info_strategy,
                 )
 
                 # 2. Enrich with structured explanations & next-tier guidance
@@ -293,16 +303,23 @@ def index():
                     ranked, group_key="audit_group", top_k=top_k
                 )
 
-                # 4. Rigorous Non-Trivial Counterfactual Audit
+                # 4. Rigorous Multi-Variation Counterfactual Audit
                 audit = run_counterfactual_audit(
                     job_description, valid_candidates, weights=weights
                 )
 
-                # 5. Fair Reranking (FA*IR-inspired)
-                fair_result_obj = fair_rerank(ranked, group_key="audit_group")
+                # 5. Fair Reranking (FA*IR-inspired) with configurable constraint level
+                fair_result_obj = fair_rerank(
+                    ranked, group_key="audit_group", constraint_level=constraint_level
+                )
                 fair_results = fair_result_obj["reranked"]
                 for fc in fair_results:
                     fc["explanation_details"] = generate_candidate_explanation(fc)
+
+                # 6. Pareto Frontier Multi-Constraint Comparison
+                pareto_comparison = compare_fair_rerank_constraints(
+                    ranked, group_key="audit_group", top_k=top_k
+                )
 
                 # Compute NDCG@K
                 ndcg_metrics = calculate_ndcg(ranked, fair_results, k=top_k)
@@ -313,6 +330,8 @@ def index():
                 report_data = {
                     "job_description": job_description,
                     "ranking_mode": ranking_mode,
+                    "missing_info_strategy": missing_info_strategy,
+                    "constraint_level": constraint_level,
                     "total_candidates": len(valid_candidates),
                     "weights_used": weights
                     or {
@@ -327,6 +346,7 @@ def index():
                     "fair_reranked_results": fair_results,
                     "fairness_metrics": fairness_metrics,
                     "counterfactual_audit": audit,
+                    "pareto_comparison": pareto_comparison,
                     "ndcg_metrics": ndcg_metrics,
                     "fair_reranking_comparison": {
                         "swaps_count": fair_result_obj["swaps_count"],
@@ -340,6 +360,12 @@ def index():
                             "max_rank_shift", 0
                         ),
                         "rank_deltas": fair_result_obj["rank_deltas"],
+                        "constraint_level_used": fair_result_obj.get(
+                            "constraint_level_used", "moderate"
+                        ),
+                        "deficit_threshold_used": fair_result_obj.get(
+                            "deficit_threshold_used", 0.75
+                        ),
                         "assumptions": fair_result_obj.get("assumptions", []),
                     },
                 }
@@ -363,6 +389,9 @@ def index():
         ui_weights=ui_weights,
         top_k=top_k,
         fair_rerank_stats=fair_result_obj,
+        pareto_comparison=pareto_comparison,
+        missing_info_strategy=missing_info_strategy,
+        constraint_level=constraint_level,
     )
 
 
@@ -382,6 +411,13 @@ def api_rank_candidates():
     ranking_mode = data.get("ranking_mode", "standard")
     top_k = data.get("top_k")
     weights = data.get("weights")
+    missing_info_strategy = data.get("missing_info_strategy", "rebalance")
+    constraint_level = data.get("constraint_level", "moderate")
+
+    if missing_info_strategy not in ["rebalance", "neutral", "zero"]:
+        missing_info_strategy = "rebalance"
+    if constraint_level not in ["strict", "moderate", "relaxed"]:
+        constraint_level = "moderate"
 
     if not job_description:
         return jsonify({"status": "error", "message": "job_description is required."}), 400
@@ -389,16 +425,26 @@ def api_rank_candidates():
         return jsonify({"status": "error", "message": "At least 2 candidates are required."}), 400
 
     try:
-        ranked = score_candidates_advanced(job_description, candidates, weights=weights)
+        ranked = score_candidates_advanced(
+            job_description,
+            candidates,
+            weights=weights,
+            missing_info_strategy=missing_info_strategy,
+        )
         for c in ranked:
             c["explanation_details"] = generate_candidate_explanation(c)
 
         metrics = calculate_fairness_metrics(ranked, group_key=group_key, top_k=top_k)
         audit = run_counterfactual_audit(job_description, candidates, weights=weights)
-        fair_obj = fair_rerank(ranked, group_key=group_key)
+        fair_obj = fair_rerank(
+            ranked, group_key=group_key, constraint_level=constraint_level
+        )
         for fc in fair_obj["reranked"]:
             fc["explanation_details"] = generate_candidate_explanation(fc)
 
+        pareto_comparison = compare_fair_rerank_constraints(
+            ranked, group_key=group_key, top_k=top_k
+        )
         ndcg_metrics = calculate_ndcg(ranked, fair_obj["reranked"], k=top_k)
 
         # Store in session for export
@@ -406,6 +452,8 @@ def api_rank_candidates():
         set_session_report(sid, {
             "job_description": job_description,
             "ranking_mode": ranking_mode,
+            "missing_info_strategy": missing_info_strategy,
+            "constraint_level": constraint_level,
             "total_candidates": len(candidates),
             "weights_used": ranked[0].get("weights_used", {}),
             "top_k_used": metrics.get("top_k_used"),
@@ -414,6 +462,7 @@ def api_rank_candidates():
             "fair_reranked_results": fair_obj["reranked"],
             "fairness_metrics": metrics,
             "counterfactual_audit": audit,
+            "pareto_comparison": pareto_comparison,
             "ndcg_metrics": ndcg_metrics,
             "fair_reranking_comparison": {
                 "swaps_count": fair_obj["swaps_count"],
@@ -421,12 +470,16 @@ def api_rank_candidates():
                 "avg_rank_shift": fair_obj.get("avg_rank_shift", 0.0),
                 "max_rank_shift": fair_obj.get("max_rank_shift", 0),
                 "rank_deltas": fair_obj["rank_deltas"],
+                "constraint_level_used": fair_obj.get("constraint_level_used", "moderate"),
+                "deficit_threshold_used": fair_obj.get("deficit_threshold_used", 0.75),
             },
         })
 
         return jsonify({
             "status": "success",
             "ranking_mode": ranking_mode,
+            "missing_info_strategy": missing_info_strategy,
+            "constraint_level": constraint_level,
             "weights_used": ranked[0].get("weights_used", {}),
             "standard_ranking": ranked,
             "fair_reranked": fair_obj["reranked"],
@@ -435,7 +488,10 @@ def api_rank_candidates():
                 "utility_retention_pct": fair_obj["utility_retention_pct"],
                 "avg_rank_shift": fair_obj.get("avg_rank_shift", 0.0),
                 "max_rank_shift": fair_obj.get("max_rank_shift", 0),
+                "constraint_level_used": fair_obj.get("constraint_level_used", "moderate"),
+                "deficit_threshold_used": fair_obj.get("deficit_threshold_used", 0.75),
             },
+            "pareto_comparison": pareto_comparison,
             "ndcg_metrics": ndcg_metrics,
             "fairness_metrics": metrics,
             "counterfactual_audit": audit,
