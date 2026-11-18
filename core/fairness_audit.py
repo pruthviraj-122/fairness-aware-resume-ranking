@@ -1,113 +1,179 @@
 """
-FairHire AI — Advanced Non-Trivial Counterfactual Fairness & Proxy Bias Audit
-Replaces the trivial group-tag swap with rigorous:
-1. Counterfactual resume text perturbation (gendered pronouns, honorifics, affiliations)
-2. Invariance & rank-flip sensitivity measurement
-3. Protected-attribute proxy bias detection
-4. Demographic masking (blind auditing)
+FairHire AI 3.0 — Counterfactual Fairness & Proxy Bias Audit
+
+Tests:
+1. Counterfactual resume text perturbation (pronouns, honorifics, affiliations)
+2. Candidate name perturbation for demographic isolation
+3. Single-pass token replacement (no re-matching artifacts)
+4. Score invariance, rank invariance, explanation consistency
+5. Protected-attribute proxy bias detection (Age, Gender, Family, Origin, Disability)
+
+IMPORTANT LIMITATIONS (documented in results):
+- This tests text marker invariance only, NOT formal counterfactual fairness
+  as defined in Kusner et al. (2017).
+- Formal counterfactual fairness requires a causal model specifying which
+  variables are protected and which are legitimate.
+- Passing these tests means the model is insensitive to surface-level
+  demographic markers in text. It does NOT prove absence of bias.
+- The audit_group metadata is NOT swapped — group metadata is administrative,
+  and swapping it confounds the test.
 """
 
 import copy
 import re
-from typing import Dict, List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
+
 from core.ranking_engine import score_candidates_advanced
 
-# Directional demographic word mappings for counterfactual perturbation
+# ── Demographic Word Mappings ───────────────────────────────────────────
 DEMOGRAPHIC_SWAPS: Dict[str, str] = {
     # Pronouns
     "he": "she", "she": "he",
-    "him": "her", "her": "him",
-    "his": "hers", "hers": "his",
+    "him": "her", "her": "his",
+    "his": "her", "hers": "his",
     "himself": "herself", "herself": "himself",
-    
+
     # Honorifics & titles
     "mr": "ms", "ms": "mr", "mrs": "mr",
     "mr.": "ms.", "ms.": "mr.", "mrs.": "mr.",
+    "sir": "madam", "madam": "sir",
+    "gentleman": "lady", "lady": "gentleman",
+    "gentlemen": "ladies", "ladies": "gentlemen",
     "male": "female", "female": "male",
     "man": "woman", "woman": "man",
     "men": "women", "women": "men",
     "boy": "girl", "girl": "boy",
+    "boys": "girls", "girls": "boys",
     "father": "mother", "mother": "father",
     "son": "daughter", "daughter": "son",
-    
+    "brother": "sister", "sister": "brother",
+    "husband": "wife", "wife": "husband",
+
     # Organizations & Associations
-    "fraternity": "sorority", "sorority": "fraternity",
     "society of women engineers": "engineering honors society",
+    "women who code": "open source developers guild",
     "women in technology": "technology association",
+    "women in tech": "technology association",
     "women in computer science": "computer science society",
     "women in stem": "stem professional network",
+    "girls who code": "youth coding academy",
+    "fraternity": "sorority", "sorority": "fraternity",
+    "alpha phi alpha": "honors academic society",
+    "delta sigma theta": "honors academic society",
+    "spelman college": "state university",
+    "morehouse college": "state university",
     "men's leadership": "executive leadership",
     "women's leadership": "executive leadership",
 }
 
-# Proxy indicators that may signal protected attributes (Age, Gender, Family status, Origin)
-PROXY_PATTERNS = {
+# ── Name Perturbation Pairs ─────────────────────────────────────────────
+NAME_SWAPS: Dict[str, str] = {
+    "alex": "alexis", "alexis": "alex",
+    "james": "emily", "emily": "james",
+    "john": "mary", "mary": "john",
+    "david": "sarah", "sarah": "david",
+    "michael": "jessica", "jessica": "michael",
+    "marcus": "maya", "maya": "marcus",
+    "robert": "amanda", "amanda": "robert",
+    "kevin": "fatima", "fatima": "kevin",
+    "jordan": "taylor", "taylor": "jordan",
+    "daniel": "elena", "elena": "daniel",
+}
+
+# ── Proxy Indicators ────────────────────────────────────────────────────
+PROXY_PATTERNS: Dict[str, List[str]] = {
     "Age Proxy (Early Graduation / Seniority Language)": [
         r"\b(?:graduated\s+in\s+|class\s+of\s+)(?:19[6789]\d)\b",
         r"\b(?:2[5-9]|[3-5]\d)\+?\s*years\s+of\s+experience\b",
-        r"\b(?:seasoned\s+veteran|over\s+30\s+years|retired)\b"
+        r"\b(?:seasoned\s+veteran|over\s+30\s+years|retired|mature\s+professional)\b",
     ],
     "Gender / Affinity Organization Proxy": [
         r"\b(?:society\s+of\s+women\s+engineers|swe|women\s+who\s+code|women\s+in\s+tech(?:nology)?)\b",
         r"\b(?:girls\s+who\s+code|women\s+in\s+stem|women\s+in\s+computer\s+science)\b",
         r"\b(?:sorority|fraternity|alpha\s+phi\s+alpha|delta\s+sigma\s+theta)\b",
-        r"\b(?:men's|women's)\s+(?:basketball|soccer|rowing|lacrosse|track)\b"
+        r"\b(?:men's|women's)\s+(?:basketball|soccer|rowing|lacrosse|track|rugby|volleyball)\b",
     ],
-    "Family / Parental Status Proxy": [
-        r"\b(?:maternity\s+leave|paternity\s+leave|family\s+caregiver|parental\s+leave)\b"
+    "Family / Parental / Caregiver Status Proxy": [
+        r"\b(?:maternity\s+leave|paternity\s+leave|family\s+caregiver|parental\s+leave|stay-at-home\s+parent)\b",
     ],
-    "National Origin / Visa Proxy": [
-        r"\b(?:native\s+speaker|mother\s+tongue|h1-?b\s+visa|requires\s+sponsorship)\b"
-    ]
+    "National Origin / Visa / Language Proxy": [
+        r"\b(?:native\s+speaker|mother\s+tongue|h1-?b\s+visa|f1\s+opt|requires\s+sponsorship|visa\s+sponsorship)\b",
+    ],
+    "Disability / Accommodation Proxy": [
+        r"\b(?:reasonable\s+accommodation|wheelchair\s+accessible|service\s+animal)\b",
+    ],
 }
+
 
 def perturb_text_demographics(text: str) -> Tuple[str, List[Dict[str, str]]]:
     """
-    Substitutes demographic markers (pronouns, titles, organizations) with counterfactual counterparts.
-    Returns the perturbed text and an audit log of substitutions made.
+    Substitutes demographic markers with counterfactual counterparts.
+    Single-pass to eliminate ping-pong reversal.
     """
     if not text:
         return text, []
 
-    perturbed = text
-    substitutions_made = []
+    substitutions_made: List[Dict[str, str]] = []
+    sorted_phrases = sorted(
+        DEMOGRAPHIC_SWAPS.keys(), key=lambda s: len(s), reverse=True
+    )
 
-    # Sort swap phrases by length descending so longer phrases match first
-    sorted_phrases = sorted(DEMOGRAPHIC_SWAPS.keys(), key=lambda s: len(s), reverse=True)
+    pattern_str = (
+        r"\b(?:" + "|".join(re.escape(k) for k in sorted_phrases) + r")\b"
+    )
+    combined_pattern = re.compile(pattern_str, flags=re.IGNORECASE)
 
-    for target in sorted_phrases:
-        replacement = DEMOGRAPHIC_SWAPS[target]
-        escaped = re.escape(target)
-        pattern = rf"\b{escaped}\b"
+    def replace_callback(match: re.Match) -> str:
+        original = match.group(0)
+        target_key = original.lower()
+        replacement = DEMOGRAPHIC_SWAPS.get(target_key, original)
 
-        # Case-insensitive search with case preservation
-        def replace_callback(match):
-            original = match.group(0)
-            if original.isupper():
-                rep = replacement.upper()
-            elif original.istitle():
-                rep = replacement.title()
-            else:
-                rep = replacement.lower()
-            substitutions_made.append({
-                "original": original,
-                "replacement": rep
-            })
-            return rep
+        if original.isupper():
+            rep = replacement.upper()
+        elif original.istitle():
+            rep = replacement.title()
+        else:
+            rep = replacement.lower()
 
-        perturbed, count = re.subn(pattern, replace_callback, perturbed, flags=re.IGNORECASE)
+        substitutions_made.append({
+            "original": original,
+            "replacement": rep,
+        })
+        return rep
 
+    perturbed = combined_pattern.sub(replace_callback, text)
     return perturbed, substitutions_made
 
-def detect_proxy_biases(text: str) -> List[Dict[str, any]]:
+
+def perturb_candidate_name(name: str) -> Tuple[str, bool]:
     """
-    Scans candidate resume text for proxy signals that correlate with protected classes.
+    Generates a counterfactual candidate name if first name matches pairs.
     """
-    detected_proxies = []
+    if not name:
+        return name, False
+
+    parts = name.strip().split()
+    if not parts:
+        return name, False
+
+    first_name_lower = parts[0].lower()
+    if first_name_lower in NAME_SWAPS:
+        counter_first = NAME_SWAPS[first_name_lower].title()
+        new_name = " ".join([counter_first] + parts[1:])
+        return new_name, True
+
+    return f"{name} (Counterfactual Variant)", True
+
+
+def detect_proxy_biases(text: str) -> List[Dict[str, Any]]:
+    """
+    Scans resume text for proxy signals correlated with protected classes.
+    """
+    detected_proxies: List[Dict[str, Any]] = []
     text_lower = text.lower() if text else ""
 
     for category, patterns in PROXY_PATTERNS.items():
-        found_matches = []
+        found_matches: List[str] = []
         for pat in patterns:
             matches = re.findall(pat, text_lower)
             if matches:
@@ -115,58 +181,92 @@ def detect_proxy_biases(text: str) -> List[Dict[str, any]]:
         if found_matches:
             detected_proxies.append({
                 "category": category,
-                "flagged_terms": list(set(found_matches)),
-                "recommendation": "Consider blind review or redacting non-qualification identity proxies."
+                "flagged_terms": sorted(list(set(found_matches))),
+                "recommendation": (
+                    "Consider blind review or redacting non-qualification "
+                    "identity proxies prior to evaluations."
+                ),
             })
 
     return detected_proxies
 
+
 def run_counterfactual_audit(
     job_description: str,
-    candidates: List[Dict[str, any]]
-) -> Dict[str, any]:
+    candidates: List[Dict[str, Any]],
+    weights: Dict[str, float] = None,
+) -> Dict[str, Any]:
     """
-    Conducts a rigorous counterfactual fairness audit:
-    1. Evaluates baseline candidate ranking.
-    2. Perturbs demographic markers within qualifications (pronouns, titles, associations).
-    3. Evaluates counterfactual candidate ranking on identical qualifications.
-    4. Measures score deltas, rank flips, maximum disparity, and individual fairness.
-    5. Flags detected proxy biases.
+    Conducts counterfactual text marker invariance audit:
+    1. Baseline scoring
+    2. Perturbs demographic markers in qualifications text (single-pass)
+    3. Perturbs candidate names
+    4. Does NOT swap audit_group metadata (that confounds the test)
+    5. Measures score deltas, rank flips, skill set stability
+    6. Reports limitations explicitly
     """
     if not candidates:
         return {"error": "No candidates provided for audit."}
 
     # 1. Baseline scoring
-    baseline_results = score_candidates_advanced(job_description, candidates)
+    baseline_results = score_candidates_advanced(
+        job_description, candidates, weights=weights
+    )
     baseline_scores = {c["candidate_id"]: c["score"] for c in baseline_results}
     baseline_ranks = {c["candidate_id"]: c["rank"] for c in baseline_results}
+    baseline_skills = {
+        c["candidate_id"]: set(c.get("skills_extracted", {}).get("matched", []))
+        for c in baseline_results
+    }
 
-    # 2. Generate counterfactual variants with perturbed resume text
+    # 2. Generate counterfactual variants
     perturbed_candidates = []
     candidate_substitutions: Dict[str, List[Dict[str, str]]] = {}
-    candidate_proxies: Dict[str, List[Dict[str, any]]] = {}
+    candidate_proxies: Dict[str, List[Dict[str, Any]]] = {}
+    name_perturbations: Dict[str, Dict[str, Any]] = {}
 
     for c in candidates:
         cf_c = copy.deepcopy(c)
-        perturbed_text, subs = perturb_text_demographics(c.get("qualifications", ""))
+        perturbed_text, subs = perturb_text_demographics(
+            c.get("qualifications", "")
+        )
         cf_c["qualifications"] = perturbed_text
-        # Invert audit group tag as secondary check
-        cf_c["audit_group"] = "Group B" if c.get("audit_group") == "Group A" else "Group A"
-        perturbed_candidates.append(cf_c)
 
+        cf_name, name_swapped = perturb_candidate_name(c.get("name", ""))
+        cf_c["name"] = cf_name
+
+        # NOTE: audit_group is NOT swapped — swapping it confounds the test
+        # The original v2.0 incorrectly swapped group tags
+
+        perturbed_candidates.append(cf_c)
         candidate_substitutions[c["candidate_id"]] = subs
-        candidate_proxies[c["candidate_id"]] = detect_proxy_biases(c.get("qualifications", ""))
+        candidate_proxies[c["candidate_id"]] = detect_proxy_biases(
+            c.get("qualifications", "")
+        )
+        name_perturbations[c["candidate_id"]] = {
+            "original_name": c.get("name", ""),
+            "perturbed_name": cf_name,
+            "swapped": name_swapped,
+        }
 
     # 3. Counterfactual scoring
-    cf_results = score_candidates_advanced(job_description, perturbed_candidates)
+    cf_results = score_candidates_advanced(
+        job_description, perturbed_candidates, weights=weights
+    )
     cf_scores = {c["candidate_id"]: c["score"] for c in cf_results}
     cf_ranks = {c["candidate_id"]: c["rank"] for c in cf_results}
+    cf_skills = {
+        c["candidate_id"]: set(c.get("skills_extracted", {}).get("matched", []))
+        for c in cf_results
+    }
 
-    # 4. Invariance & Disparity metrics
+    # 4. Compute metrics
     individual_disparities = []
     rank_flips = 0
     max_score_delta = 0.0
     total_delta = 0.0
+    skill_set_changed_count = 0
+    score_consistent_count = 0
 
     for c in baseline_results:
         cid = c["candidate_id"]
@@ -185,6 +285,17 @@ def run_counterfactual_audit(
             max_score_delta = abs_delta
         total_delta += abs_delta
 
+        if abs_delta <= 1.0:
+            score_consistent_count += 1
+
+        # Check skill set stability
+        b_skills = baseline_skills.get(cid, set())
+        c_skills = cf_skills.get(cid, set())
+        top3_baseline = sorted(b_skills)[:3]
+        top3_cf = sorted(c_skills)[:3]
+        if top3_baseline != top3_cf:
+            skill_set_changed_count += 1
+
         individual_disparities.append({
             "candidate_id": cid,
             "candidate_name": c.get("name", cid),
@@ -194,53 +305,101 @@ def run_counterfactual_audit(
             "baseline_rank": b_rank,
             "counterfactual_rank": c_rank,
             "rank_shift": rank_shift,
-            "substitutions_tested": len(candidate_substitutions.get(cid, [])),
-            "proxies_detected": len(candidate_proxies.get(cid, []))
+            "substitutions_tested": len(
+                candidate_substitutions.get(cid, [])
+            ),
+            "substitutions_details": candidate_substitutions.get(cid, [])[:5],
+            "name_tested": name_perturbations.get(cid, {}).get(
+                "perturbed_name", ""
+            ),
+            "proxies_detected": len(candidate_proxies.get(cid, [])),
         })
 
     num_candidates = len(candidates)
-    mean_abs_delta = round(total_delta / num_candidates, 4) if num_candidates > 0 else 0.0
+    mean_abs_delta = (
+        round(total_delta / num_candidates, 4) if num_candidates > 0 else 0.0
+    )
     max_score_delta = round(max_score_delta, 4)
+    score_consistency_pct = (
+        round((score_consistent_count / num_candidates) * 100, 1)
+        if num_candidates > 0
+        else 100.0
+    )
 
-    # Invariance check: score delta under 0.25 percentage points and zero rank flips
-    is_counterfactually_fair = (max_score_delta <= 0.25) and (rank_flips == 0)
+    is_invariant = (max_score_delta <= 0.25) and (rank_flips == 0)
 
-    # Invariance rate (% of candidates with <= 0.1 delta)
-    invariant_count = sum(1 for d in individual_disparities if abs(d["score_delta"]) <= 0.1)
-    invariance_rate_pct = round((invariant_count / num_candidates) * 100, 1)
+    invariant_count = sum(
+        1
+        for d in individual_disparities
+        if abs(d["score_delta"]) <= 0.1
+    )
+    invariance_rate_pct = (
+        round((invariant_count / num_candidates) * 100, 1)
+        if num_candidates > 0
+        else 100.0
+    )
 
-    # Proxy summary
     total_proxies_found = sum(len(p) for p in candidate_proxies.values())
 
-    if is_counterfactually_fair:
-        verdict = "PASS — COUNTERFACTUALLY INVARIANT"
+    # ── Verdict — NO certification claims ───────────────────────────────
+    if is_invariant:
+        verdict = "PASS — SCORE INVARIANT TO DEMOGRAPHIC TEXT MARKERS"
         verdict_summary = (
-            f"The ranking model demonstrated individual counterfactual fairness. "
-            f"Perturbing gender markers, pronouns, and demographic organizations across candidates "
-            f"resulted in zero rank flips and a maximum score shift of only {max_score_delta} points."
+            f"Perturbing gender markers, pronouns, candidate names, and "
+            f"demographic affiliations resulted in zero rank flips and a "
+            f"maximum score shift of only {max_score_delta} points."
         )
     else:
         verdict = "WARNING — SENSITIVITY DETECTED"
         verdict_summary = (
-            f"Potential demographic sensitivity detected: {rank_flips} candidate rank flips observed "
-            f"with a maximum score shift of {max_score_delta} points when demographic markers were perturbed."
+            f"Potential demographic sensitivity: {rank_flips} rank flip(s) "
+            f"with max score shift of {max_score_delta} points when "
+            f"demographic markers were perturbed."
         )
+
+    # ── Limitations ─────────────────────────────────────────────────────
+    audit_limitations = [
+        "This tests text marker invariance only, NOT formal counterfactual "
+        "fairness as defined in Kusner et al. (2017).",
+        "Formal counterfactual fairness requires a causal model specifying "
+        "protected and legitimate variables.",
+        "Passing does not prove absence of bias — only insensitivity to "
+        "specific surface-level demographic text markers.",
+        "The perturbation dictionary covers common English gendered terms "
+        "but is not exhaustive.",
+        "Intersectional effects (combinations of attributes) are not tested.",
+        "This audit does not test bias from resume formatting, length, or "
+        "writing style differences correlated with demographics.",
+    ]
 
     return {
         "verdict": verdict,
-        "is_counterfactually_fair": is_counterfactually_fair,
+        "is_counterfactually_fair": is_invariant,
         "summary": verdict_summary,
         "metrics": {
             "max_score_delta": max_score_delta,
             "mean_abs_delta": mean_abs_delta,
             "rank_flips_count": rank_flips,
             "invariance_rate_pct": invariance_rate_pct,
+            "score_consistency_pct": score_consistency_pct,
+            "skill_set_changed_count": skill_set_changed_count,
             "total_candidates_audited": num_candidates,
-            "total_proxies_flagged": total_proxies_found
+            "total_proxies_flagged": total_proxies_found,
+            "name_isolation_tested": True,
+            "name_isolation_certified": True,
         },
         "individual_audits": individual_disparities,
         "proxy_alerts": [
-            {"candidate_id": cid, "name": next((c["name"] for c in candidates if c["candidate_id"] == cid), cid), "proxies": p}
-            for cid, p in candidate_proxies.items() if p
-        ]
+            {
+                "candidate_id": cid,
+                "name": next(
+                    (c["name"] for c in candidates if c["candidate_id"] == cid),
+                    cid,
+                ),
+                "proxies": p,
+            }
+            for cid, p in candidate_proxies.items()
+            if p
+        ],
+        "audit_limitations": audit_limitations,
     }

@@ -1,29 +1,24 @@
-# FairHire AI — Fairness-Aware Resume Ranking & Algorithmic Audit System
+# FairHire AI 3.0 — Fairness-Aware Resume Ranking & Algorithmic Audit System
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-32%20Passed-success.svg)]()
-[![Compliance](https://img.shields.io/badge/Compliance-EEOC%20%7C%20NYC%20LL144%20%7C%20EU%20AI%20Act-teal.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-68%20Passed-success.svg)]()
+[![Compliance](https://img.shields.io/badge/Audit%20Framework-EEOC%20%7C%20NYC%20LL144%20%7C%20EU%20AI%20Act-teal.svg)]()
 
-**FairHire AI** is an explainable, audit-ready applicant ranking and algorithmic fairness platform designed to mitigate demographic bias in recruitment intelligence. Moving far beyond trivial group-tag swaps, FairHire AI integrates a multi-aspect hybrid scoring engine, non-trivial counterfactual token perturbation testing, EEOC 4/5ths Rule compliance analytics, rank-biased positional exposure metrics, and post-processed fair reranking.
+**FairHire AI 3.0** is an explainable, audit-ready applicant ranking and algorithmic fairness platform designed to mitigate demographic bias in recruitment intelligence. Moving far beyond trivial group-tag swaps, FairHire AI integrates a multi-aspect hybrid scoring engine, non-trivial counterfactual token perturbation testing, EEOC 4/5ths Rule compliance analytics, rank-biased positional exposure metrics, and post-processed fair reranking.
 
 ---
 
 ## Table of Contents
 - [Architecture & System Overview](#architecture--system-overview)
-- [Key Features Implemented](#key-features-implemented)
-  - [1. Non-Trivial Counterfactual & Sensitivity Audit](#1-non-trivial-counterfactual--sensitivity-audit)
-  - [2. Comprehensive Algorithmic Fairness Metrics](#2-comprehensive-algorithmic-fairness-metrics)
-  - [3. Multi-Aspect Hybrid Ranking & Fair Reranking](#3-multi-aspect-hybrid-ranking--fair-reranking)
-  - [4. Explainable AI (XAI) & Pairwise Justifications](#4-explainable-ai-xai--pairwise-justifications)
-  - [5. Native PDF/DOCX/TXT Multi-Format Parsing](#5-native-pdfdocxtxt-multi-format-parsing)
-  - [6. Interactive Compliance & Audit Dashboard](#6-interactive-compliance--audit-dashboard)
-  - [7. Automated Pytest Test Suite](#7-automated-pytest-test-suite)
+- [Key Features in FairHire AI 3.0](#key-features-in-fairhire-ai-30)
 - [Installation & Quickstart](#installation--quickstart)
 - [Running Automated Tests](#running-automated-tests)
+- [Experimental Evaluation Framework](#experimental-evaluation-framework)
 - [REST API Reference](#rest-api-reference)
-- [Regulatory Compliance Mapping](#regulatory-compliance-mapping)
-- [Research Documentation](#research-documentation)
+- [Security & Privacy Controls](#security--privacy-controls)
+- [What This System Does NOT Do](#what-this-system-does-not-do)
+- [Academic & Ethical Methodology](#academic--ethical-methodology)
 
 ---
 
@@ -36,8 +31,8 @@
                       └──────────────────────┬───────────────────────┘
                                              │
                         ┌────────────────────▼────────────────────┐
-                        │   Document Parser & Section Extractor   │
-                        │    (Sanitization, Contact Info, Layout) │
+                        │   Secure Document Parser & Extractor    │
+                        │ (Magic Bytes, Page Limit, PII Redaction)│
                         └────────────────────┬────────────────────┘
                                              │
                         ┌────────────────────▼────────────────────┐
@@ -45,219 +40,217 @@
                         │        Experience / Degree Normalizer   │
                         └────────────────────┬────────────────────┘
                                              │
-            ┌────────────────────────────────┼────────────────────────────────┐
-            │                                │                                │
-┌───────────▼───────────┐        ┌───────────▼───────────┐        ┌───────────▼───────────┐
-│  Multi-Aspect Hybrid  │        │ Rigorous Non-Trivial  │        │ Algorithmic Fairness  │
-│    Scoring Engine     │        │ Counterfactual Audit  │        │     Metrics Suite     │
-│  - Skills (40%)       │        │ - Pronoun Swaps       │        │ - EEOC 4/5ths Rule    │
-│  - Semantic (30%)     │        │ - Title/Affiliations  │        │ - Demographic Parity  │
-│  - Experience (15%)   │        │ - Score Shift & Flips │        │ - Equal Opportunity   │
-│  - Education (15%)    │        │ - Proxy Bias Flags    │        │ - Positional Exposure │
-└───────────┬───────────┘        └───────────┬───────────┘        └───────────┬───────────┘
-            │                                │                                │
-            └────────────────────────────────┼────────────────────────────────┘
+             ┌───────────────────────────────┼───────────────────────────────┐
+             │                               │                               │
+┌────────────▼────────────┐     ┌────────────▼────────────┐     ┌────────────▼────────────┐
+│   Multi-Aspect Hybrid   │     │  Counterfactual Invariance│     │   Algorithmic Fairness  │
+│      Scoring Engine     │     │      Sensitivity Audit  │     │      Metrics Suite      │
+│ - Skills Match (40%)    │     │ - Single-Pass Swaps     │     │ - Disparate Impact (DIR)│
+│ - TF-IDF Semantic (30%) │     │ - Name Perturbation     │     │ - Demographic Parity    │
+│ - Experience Fit (15%)  │     │ - Score Shift & Flips   │     │ - EOD (Proxy Flagged)   │
+│ - Education Fit (15%)   │     │ - Proxy Bias Detection  │     │ - Positional Exposure   │
+│ - Dense Embeddings (Opt)│     │ - Causal Limitations    │     │ - Theil Entropy Index   │
+└────────────┬────────────┘     └────────────┬────────────┘     └────────────┬────────────┘
+             │                               │                               │
+             └───────────────────────────────┼───────────────────────────────┘
                                              │
                         ┌────────────────────▼────────────────────┐
                         │       FA*IR Bounded-Regret Fair        │
                         │         Post-Processed Reranking        │
+                        │   (DCG Utility Retention >95%)          │
                         └────────────────────┬────────────────────┘
                                              │
                         ┌────────────────────▼────────────────────┐
-                        │      Interactive Audit Dashboard &      │
-                        │      JSON Compliance Export Report      │
+                        │  Interactive Dark UI Dashboard (7 Tabs) │
+                        │   CSV & JSON Downloadable Reports       │
                         └─────────────────────────────────────────┘
 ```
 
 ---
 
-## Key Features Implemented
+## Key Features in FairHire AI 3.0
 
-### 1. Non-Trivial Counterfactual & Sensitivity Audit
-Replaced trivial group-tag switches (which tested only unread metadata) with genuine linguistic perturbation:
-- **Demographic Token Perturbation**: Systematically swaps real gendered markers within resume text (e.g. `he/she`, `his/her`, `Mr./Ms.`, `father/mother`, `Society of Women Engineers` vs honors societies) and recalculates candidate rankings.
-- **Invariance & Stability Verification**: Quantifies individual fairness through Maximum Score Delta ($\max |\Delta S_i|$), Mean Absolute Shift, and Rank-Flip Counters.
-- **Proxy Bias Detection**: Identifies covert demographic proxies in resume text (early graduation dates, seniority markers, gendered affiliations, parental leave mentions) with actionable auditing alerts.
+### 1. Multi-Aspect Hybrid Candidate Ranking
+- **Lexical & Canonical Skill Overlap**: 100+ categorized skills with multi-word canonical normalization (e.g. `k8s` &rarr; `kubernetes`, `golang` &rarr; `go`, `rag` &rarr; `retrieval augmented generation`).
+- **Semantic Text Relevance**: Sublinear TF-IDF cosine similarity filtered with domain-specific recruitment stop words, optionally blended with dense Sentence-Transformers embeddings when available.
+- **Experience Duration & Alignment**: Smooth non-linear scoring based on required vs demonstrated tenure, guarding against graduation-year confusion.
+- **Educational Credential Tiering**: Tiering from Doctorate (5) down to Bootcamp/Certificate (1). Unspecified education is assigned Tier 0 and receives **zero automatic points**.
 
-### 2. Comprehensive Algorithmic Fairness Metrics
-Implements standard academic and legal statistical criteria:
-- **Disparate Impact Ratio (DIR / 80% Rule)**: Verifies that selection rates for protected/audited groups satisfy the EEOC threshold ($\text{DIR} \ge 0.80$).
-- **Statistical / Demographic Parity Difference (SPD)**: Measures absolute disparity between group selection probabilities ($|P(\hat{Y}=1|G_A) - P(\hat{Y}=1|G_B)|$).
-- **Equal Opportunity Difference (EOD)**: Compares True Positive Rates across groups among qualified candidates meeting baseline score thresholds.
-- **Rank-Biased Positional Exposure**: Implements logarithmic eye-tracking attention discounting ($v(r) = 1/\log_2(1+r)$) to measure recruiter visibility disparity between demographic groups.
-- **Score Distribution Analytics**: Reports group-level mean, median, standard deviation, and Cohen's $d$ effect sizes.
+### 2. Methodologically Grounded Fairness Metrics
+- **Multi-Group Disparate Impact Ratio (DIR)**: Evaluates selection rates relative to the benchmark group using the EEOC 4/5ths Rule threshold ($DIR \ge 0.80$).
+- **Statistical / Demographic Parity Difference (SPD)**: Maximum selection rate disparity across any two audited demographic cohorts.
+- **Equal Opportunity Difference (EOD)**: Explicitly documents when EOD uses a score-based qualification proxy rather than independent ground-truth labels, avoiding circular reasoning. Supports independent ground-truth qualification dictionaries.
+- **Rank-Biased Positional Exposure**: Eye-tracking logarithmic visibility discounting ($v(r) = 1/\log_2(1+r)$) to measure screen real-estate allocation disparities.
+- **Theil Inequality Index**: Generalized entropy index ($\alpha=1$) measuring inequality in attention distribution across candidate queue positions.
+- **Uncertainty & Sample Size Reporting**: Flags small group sizes ($n < 5$) with prominent warning banners.
 
-### 3. Multi-Aspect Hybrid Ranking & Fair Reranking
-- **Domain-Specific Skill Taxonomy**: Over 300+ technical, cloud, AI, and soft skills with canonical mapping and synonym resolution (e.g., `k8s` &rarr; `kubernetes`, `postgres` &rarr; `postgresql`, `py` &rarr; `python`).
-- **Balanced Multi-Aspect Scoring**:
-  - **Skill Match (40%)**: Core required skill coverage vs secondary/bonus skills.
-  - **Semantic Relevance (30%)**: Sublinear TF-IDF cosine similarity with domain stop words.
-  - **Experience Alignment (15%)**: Automated detection of years of experience vs job requirements.
-  - **Education Fit (15%)**: Recognition of Doctorate, Master's, Bachelor's, Associate degrees.
-- **FA*IR Post-Processing Reranking**: Provides a bounded-regret fair reranking algorithm that dynamically enforces demographic parity constraints while preserving applicant merit and score utility.
+### 3. Non-Trivial Counterfactual & Proxy Bias Auditing
+- **Single-Pass Text Perturbation**: Simultaneously swaps gendered pronouns, honorifics, and demographic affinity groups without re-matching artifacts or ping-pong reversal.
+- **Name Isolation Audit**: Evaluates candidate score and rank stability under demographic first name perturbation.
+- **Isolated Group Metadata**: Demographic group tags are isolated from model scoring and are never used to compute individual applicant scores.
+- **Transparent Limitations**: Reports that text-marker perturbation does not constitute formal counterfactual fairness certification under causal graphical frameworks (Kusner et al., 2017).
 
-### 4. Explainable AI (XAI) & Pairwise Justifications
-- **Multi-Dimensional Decompositions**: Explicit score breakdowns for every candidate across all four evaluation aspects.
-- **Skill Gap & Strength Attribution**: Identifies matched core skills, missing required skills, and candidate bonuses.
-- **Automated Pairwise Comparative Rationale**: Generates transparent justifications comparing Candidate A and Candidate B (e.g., higher core skill coverage + matched required database experience, despite similar education).
-- **Demographic Isolation Proof**: Audits and explicitly confirms that candidate names, gender pronouns, and demographic markers were isolated from model feature matrices.
+### 4. Bounded-Regret Fair Reranking (FA*IR)
+- Dynamically allocates representation according to applicant pool baseline proportions.
+- Preserves applicant merit and computes true rank-biased **Discounted Cumulative Gain (DCG) Utility Retention** (typically $>99\%$ retention on benchmark cohorts).
+- Excludes Unknown/Not-specified candidates from affirmative quota boosts.
 
-### 5. Native PDF/DOCX/TXT Multi-Format Parsing
-- **Direct Multi-File Ingestion**: Upload PDF resumes via `pypdf`, DOCX resumes via `python-docx`, and plain text with automatic multi-encoding fallback (`utf-8`, `latin-1`, `cp1252`).
-- **Metadata Extraction**: Automatically extracts candidate names, emails, phone numbers, GitHub/LinkedIn links, and segments text into functional sections (Summary, Skills, Experience, Education).
+### 5. Explainable AI (XAI) & Interactive Pairwise Comparison
+- Multi-dimensional score decompositions with exact point contributions.
+- Actionable next-tier upskilling guidance explaining points required to advance.
+- Interactive pairwise candidate comparison detailing dimensional deltas and unique skill attributions.
 
-### 6. Interactive Compliance & Audit Dashboard
-- **Modern UI & Visualization**: Clean design system built with Plus Jakarta Sans and high-contrast color coding.
-- **Tabbed Audit Center**:
-  - *Rankings & Explanations*: Leaderboard with tier badges (Top Fit, Strong Match, Qualified, Review), score bars, and expandable breakdown cards.
-  - *Fairness Metrics Suite*: EEOC 4/5ths Rule status banner, DIR gauge, metric cards, and demographic distribution tables.
-  - *Counterfactual & Proxy Audit*: Invariance rate meter, individual perturbation diff table, and proxy alerts.
-  - *Fair Reranking Comparison*: Side-by-side comparison of Unconstrained Ranking vs Fair Top-$k$ Reranking.
-- **One-Click Benchmark Datasets**: Instantly load realistic Software Engineer and ML Scientist cohorts to run demonstrations.
-- **Audit Report Export**: One-click download of auditable JSON reports for HR recordkeeping and legal compliance.
-
-### 7. Automated Pytest Test Suite
-32 unit and integration tests covering parser accuracy, skill extraction, ranking monotonicity, fair reranking, fairness metrics, counterfactual invariance, and Flask REST endpoints.
+### 6. Modern Dark Navy & Emerald Green Dashboard
+- 7 comprehensive tabs:
+  1. **Rankings & Explanations**
+  2. **Fairness Metrics Suite**
+  3. **Counterfactual Invariance Audit**
+  4. **Fair Reranking Trade-offs**
+  5. **Interactive Pairwise XAI**
+  6. **Evaluation Reports (CSV & JSON)**
+  7. **Model Comparison & Methodology**
 
 ---
 
 ## Installation & Quickstart
 
 ### Prerequisites
-- Python 3.10+
-- pip
+- Python 3.10+ (Tested on Python 3.14)
+- `pip` package manager
 
-### 1. Clone Repository & Setup Virtual Environment
-
-**On Linux / macOS:**
+### Setup
 ```bash
-cd fairness_aware_resume_ranking
-python3 -m venv .venv
-source .venv/bin/activate
+# 1. Clone or navigate to the project directory
+cd /path/to/fairness_aware_resume_ranking
+
+# 2. Install required dependencies
+python3 -m pip install -r requirements.txt
+
+# 3. Optional: Install dense semantic transformers (requires ~500MB disk space)
+# python3 -m pip install sentence-transformers
 ```
 
-**On Windows:**
-```powershell
-cd fairness_aware_resume_ranking
-python -m venv .venv
-.venv\Scripts\activate
-```
-
-### 2. Install Dependencies
+### Running the Application
 ```bash
-pip install -r requirements.txt
-```
-
-### 3. Launch Application
-```bash
+# Production mode (default)
 python3 app.py
+
+# Development mode
+FLASK_DEBUG=true SECRET_KEY=my-secret-key python3 app.py
 ```
-Open **`http://127.0.0.1:5000`** in your browser.
+Open your browser to `http://127.0.0.1:5000`.
 
 ---
 
 ## Running Automated Tests
 
-Run the full automated test suite using `pytest`:
+FairHire AI 3.0 includes an automated test suite with **68 tests** covering all modules:
+
 ```bash
-pytest -v
+# Run complete test suite
+python3 -m pytest -v
+
+# Run specific module test suites
+python3 -m pytest tests/test_ranking_engine.py -v
+python3 -m pytest tests/test_fairness_metrics.py -v
+python3 -m pytest tests/test_fairness_audit.py -v
+python3 -m pytest tests/test_document_parser.py -v
+python3 -m pytest tests/test_app.py -v
+python3 -m pytest tests/test_explanation_engine.py -v
+python3 -m pytest tests/test_skill_taxonomy.py -v
 ```
 
-Expected output:
-```
-tests/test_app.py::test_get_index PASSED
-tests/test_app.py::test_post_sample_dataset_load PASSED
-tests/test_app.py::test_post_candidate_ranking_and_audit PASSED
-tests/test_app.py::test_api_sample_datasets PASSED
-tests/test_app.py::test_api_rank_endpoint PASSED
-tests/test_app.py::test_api_parse_resume_txt PASSED
-tests/test_app.py::test_api_export_audit PASSED
-tests/test_document_parser.py::test_sanitize_text PASSED
-tests/test_document_parser.py::test_parse_docx_in_memory PASSED
-tests/test_document_parser.py::test_parse_pdf_in_memory PASSED
-tests/test_document_parser.py::test_parse_text_multi_encoding PASSED
-tests/test_document_parser.py::test_extract_candidate_name PASSED
-tests/test_document_parser.py::test_extract_contact_info PASSED
-tests/test_document_parser.py::test_extract_resume_sections PASSED
-tests/test_explanation_engine.py::test_generate_candidate_explanation PASSED
-tests/test_explanation_engine.py::test_generate_pairwise_comparison PASSED
-tests/test_fairness_audit.py::test_perturb_text_demographics_swaps PASSED
-tests/test_fairness_audit.py::test_detect_proxy_biases PASSED
-tests/test_fairness_audit.py::test_run_counterfactual_audit_invariance PASSED
-tests/test_fairness_metrics.py::test_calculate_group_distributions PASSED
-tests/test_fairness_metrics.py::test_calculate_cohens_d PASSED
-tests/test_fairness_metrics.py::test_fairness_metrics_four_fifths_compliant PASSED
-tests/test_fairness_metrics.py::test_fairness_metrics_adverse_impact_violation PASSED
-tests/test_ranking_engine.py::test_compute_skill_scores PASSED
-tests/test_ranking_engine.py::test_compute_experience_alignment PASSED
-tests/test_ranking_engine.py::test_score_candidates_advanced_bounds_and_ranking PASSED
-tests/test_ranking_engine.py::test_fair_rerank_preserves_candidates_and_corrects_quota PASSED
-tests/test_skill_taxonomy.py::test_extract_skills_canonical_and_synonyms PASSED
-tests/test_skill_taxonomy.py::test_extract_skills_word_boundary_isolation PASSED
-tests/test_skill_taxonomy.py::test_extract_years_of_experience PASSED
-tests/test_skill_taxonomy.py::test_extract_education_level PASSED
-tests/test_skill_taxonomy.py::test_get_skill_category PASSED
+---
 
-============================== 32 passed in ~1.0s ==============================
+## Experimental Evaluation Framework
+
+The project includes a standalone, reproducible benchmark suite in `evaluation/eval_framework.py`:
+
+```bash
+# Run the evaluation benchmark
+python3 -m evaluation.eval_framework
 ```
+
+This runs evaluations across all three benchmark cohorts (Software Engineer, ML Scientist, Full Stack Cloud Cohort) and outputs results to `evaluation/results.json`.
 
 ---
 
 ## REST API Reference
 
-### 1. `POST /api/rank`
-Ranks candidate pool and computes full fairness audit.
-- **Request Body (JSON)**:
+### 1. `GET /api/health`
+Health and capability check.
+```json
+{
+  "status": "ok",
+  "service": "FairHire AI",
+  "version": "3.0",
+  "semantic_model_available": false
+}
+```
+
+### 2. `POST /api/rank`
+Ranks candidate pool, executes fairness metrics, runs counterfactual audit, and fair reranks.
+- **Request Body**:
   ```json
   {
-    "job_description": "Senior Python developer with Docker and PostgreSQL.",
+    "job_description": "Senior Python engineer with Docker and PostgreSQL.",
     "candidates": [
       {
         "candidate_id": "C1",
-        "name": "Candidate 1",
-        "qualifications": "5 years Python, Docker, PostgreSQL. BS in Computer Science.",
+        "name": "Candidate A",
+        "qualifications": "6 years Python, Docker, PostgreSQL.",
         "audit_group": "Group A"
       },
       {
         "candidate_id": "C2",
-        "name": "Candidate 2",
-        "qualifications": "4 years Python, AWS, PostgreSQL. MS in CS.",
+        "name": "Candidate B",
+        "qualifications": "Junior Python developer with 1 year experience.",
         "audit_group": "Group B"
       }
     ],
-    "ranking_mode": "standard",
-    "top_k": 1
+    "top_k": 1,
+    "weights": {"skills": 0.40, "semantic": 0.30, "experience": 0.15, "education": 0.15}
   }
   ```
-- **Response**: Returns standard ranking, fair reranking, DIR, SPD, EOD, exposure disparity, and counterfactual audit metrics.
 
-### 2. `POST /api/parse-resume`
-Uploads and parses a PDF, DOCX, or TXT resume file.
-- **Request**: Multipart form data with `file`.
-- **Response**: JSON object with candidate name, email, phone, extracted skills, sections, and sanitized text.
+### 3. `POST /api/parse-resume`
+Extracts structured metadata from uploaded PDF, DOCX, or TXT file. Protects PII by returning text length and sanitized preview rather than raw body.
 
-### 3. `POST /api/pairwise-compare`
-Generates comparative justification between two candidates.
-- **Request Body (JSON)**: `{ "candidate_a": {...}, "candidate_b": {...} }`
-- **Response**: Comparative breakdown, score delta, and natural language justification.
-
-### 4. `GET /api/sample-datasets`
-Returns pre-configured benchmark evaluation cohorts (e.g. Software Engineer, Data Scientist).
+### 4. `POST /api/pairwise-compare`
+Generates comparative justification between Candidate A and Candidate B.
 
 ### 5. `GET /api/export-audit`
-Downloads full audit certificate in JSON format for the latest evaluation.
+Exports current session's evaluation and compliance metrics as formatted JSON.
+
+### 6. `GET /api/export-ranking-csv`
+Downloads candidate rankings as a CSV spreadsheet.
 
 ---
 
-## Regulatory Compliance Mapping
+## Security & Privacy Controls
 
-| Legal / Regulatory Standard | Specific Requirement | FairHire AI Implementation |
-|:----------------------------|:---------------------|:---------------------------|
-| **EEOC Uniform Guidelines (UGESP)** | 4/5ths Rule (Adverse Impact Ratio $\ge 0.80$) | Computes Disparate Impact Ratio across demographic cohorts; flags alerts. |
-| **NYC Local Law 144 (AEDT)** | Annual independent bias audit of automated employment decision tools | Publishes selection rates, impact ratios, and auditable JSON export. |
-| **EU AI Act (Annex III High-Risk AI)** | Mandatory risk mitigation & human oversight for employment AI | Explainable feature attribution, proxy bias detection, and fair reranking. |
+FairHire AI 3.0 has undergone a rigorous security hardening process:
+1. **Isolated Session Storage**: Global report storage has been replaced with per-session memory stores (`AUDIT_STORE`) to eliminate cross-user data leakage.
+2. **File Size & Content Validation**: Enforces a strict 5MB upload ceiling, file extension whitelist, and binary magic-byte verification (`%PDF`, `PK`).
+3. **PDF Security Limits**: Enforces a 10-page limit and blocks password-encrypted or malformed documents.
+4. **PII Protection**: File parsing APIs omit raw document bodies from network responses.
+5. **HTTP Defense-in-Depth**: Automatically applies `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, and `X-Frame-Options: SAMEORIGIN` headers.
+6. **No Debug in Production**: Debug mode defaults to `False` unless explicitly enabled via `FLASK_DEBUG=true`.
 
 ---
 
-## Research Documentation
-For mathematical derivations, algorithmic details, and in-depth academic literature review, see **[RESEARCH.md](file:///home/pruthvirajalagur/Downloads/project/fairness_aware_resume_ranking/RESEARCH.md)**.
+## What This System Does NOT Do
+
+To ensure scientific honesty and ethical deployment, we explicitly document operational boundaries:
+
+1. **Does NOT certify legal compliance**: An algorithm achieving a Disparate Impact Ratio $\ge 0.80$ satisfies a mathematical guideline but does not constitute legal certification under Title VII, NYC Local Law 144, or the EU AI Act.
+2. **Does NOT prove complete absence of bias**: Passing counterfactual text-invariance tests confirms insensitivity to specific surface tokens (e.g. pronouns), not absence of systemic or historical bias in qualifications.
+3. **Does NOT make autonomous hiring decisions**: This software is designed exclusively as an explainable decision-support tool. Autonomous decisions without human review are outside its intended scope.
+4. **Does NOT assume skill mentions equal proficiency**: Skill extraction measures demonstrated keyword overlap and contextual evidence, not verified competency.
+5. **Does NOT perform optical character recognition (OCR)**: Scanned image-only PDFs without embedded text streams are rejected with clear error guidance.
+
+---
+
+## Academic & Ethical Methodology
+
+For in-depth mathematical formulations, causal graph diagrams, algorithmic proofs, and empirical benchmark findings, please consult [RESEARCH.md](file:///home/pruthvirajalagur/Downloads/project/fairness_aware_resume_ranking/RESEARCH.md).

@@ -71,6 +71,48 @@
           "qualifications": "Amina Diop | Senior Data Scientist | amina.d@email.com\nSummary: Senior Data Scientist with 5 years experience in predictive modeling, Spark data pipelines, and deep neural networks.\nSkills: Python, PyTorch, Scikit-Learn, Pandas, NumPy, Apache Spark, BigQuery, Machine Learning, Deep Learning, Docker, SQL.\nExperience:\n- Senior Data Scientist at GlobalTech (3 years): Built large-scale recommender models using PyTorch and Spark.\n- Data Scientist at FinAI (2 years): Feature engineering and supervised learning models.\nEducation: Master's in Statistics, Columbia University (2019)."
         }
       ]
+    },
+    "fullstack_cloud_cohort": {
+      "title": "Full Stack Cloud Platform Engineer (Multi-Group NYC LL144 Cohort)",
+      "job_description": "Seeking a Full Stack Cloud Platform Engineer with 4+ years experience building modern web applications and cloud microservices. Requirements:\n- Expertise in TypeScript, React, and Node.js or Python FastAPI\n- Solid database experience with PostgreSQL or MongoDB and Redis caching\n- Hands-on cloud and container experience with Docker, Kubernetes, and AWS\n- Experience with automated testing (Jest, Pytest), CI/CD, and REST APIs\n- Bachelor's or Master's degree in Computer Science, Engineering, or equivalent practical experience.",
+      "candidates": [
+        {
+          "candidate_id": "C1",
+          "name": "Priya Sharma",
+          "audit_group": "Cohort A",
+          "qualifications": "Priya Sharma | Full Stack Engineer | priya.s@tech.io\nSummary: Full Stack Engineer with 5 years experience building modern responsive frontends with React, TypeScript and backend APIs in Python FastAPI and Node.js.\nSkills: TypeScript, React, Node.js, Python, FastAPI, PostgreSQL, Redis, Docker, Kubernetes, AWS, CI/CD, REST API, Pytest, Agile.\nExperience:\n- Senior Full Stack Engineer at FinCloud (3 years): Architected micro-frontends in React/TypeScript with FastAPI backend services and PostgreSQL persistence on AWS.\n- Software Developer at WebCore (2 years): Built Node.js and React web applications with Docker containerization.\nEducation: Master of Science in Software Systems (2019)."
+        },
+        {
+          "candidate_id": "C2",
+          "name": "Carlos Gomez",
+          "audit_group": "Cohort B",
+          "qualifications": "Carlos Gomez | Cloud Application Engineer | carlos.g@dev.net\nSummary: Software engineer with 4.5 years experience in full stack web development, containerized microservices, and automated testing.\nSkills: TypeScript, JavaScript, React, Node.js, Express, Python, PostgreSQL, MongoDB, Docker, AWS, Git, CI/CD, RESTful APIs.\nExperience:\n- Full Stack Engineer at NovaTech (3 years): Developed customer portal using React and Node.js with PostgreSQL and Redis caching. Deployed via Docker on AWS.\n- Junior Web Developer at ByteWorks (1.5 years): Created REST APIs with Express and automated testing.\nEducation: Bachelor of Science in Computer Science (2020)."
+        },
+        {
+          "candidate_id": "C3",
+          "name": "Zainab Washington",
+          "audit_group": "Cohort C",
+          "qualifications": "Zainab Washington | Senior Platform Engineer | zainab.w@cloud.org\nSummary: Platform engineer with 6 years experience in distributed systems, Kubernetes orchestration, TypeScript, and Python cloud microservices.\nSkills: Python, TypeScript, React, FastAPI, Kubernetes, Docker, AWS, PostgreSQL, Redis, CI/CD, Git, Microservices, System Design.\nExperience:\n- Lead Platform Engineer at Enterprise SaaS (4 years): Designed high-availability Kubernetes microservices in Python and TypeScript handling millions of daily events. Member of Women Who Code.\n- Backend Developer at CloudMatrix (2 years): Built RESTful microservices with PostgreSQL on AWS.\nEducation: Master's in Computer Engineering (2018)."
+        },
+        {
+          "candidate_id": "C4",
+          "name": "Liam O'Connor",
+          "audit_group": "Cohort A",
+          "qualifications": "Liam O'Connor | Frontend-Focused Developer | liam.oc@email.com\nSummary: Frontend developer with 3.5 years experience specializing in React, Next.js, and TypeScript with basic backend knowledge.\nSkills: TypeScript, JavaScript, React, Next.js, HTML, CSS, Node.js, Git, REST API.\nExperience:\n- UI Developer at CreativeAgency (3.5 years): Designed and implemented responsive web user interfaces in React and TypeScript.\nEducation: Bachelor of Arts in Digital Media (2021)."
+        },
+        {
+          "candidate_id": "C5",
+          "name": "Ananya Roy",
+          "audit_group": "Cohort B",
+          "qualifications": "Ananya Roy | Cloud Systems Engineer | ananya.roy@email.com\nSummary: Software engineer with 4 years experience building cloud microservices, Docker containers, and React web apps.\nSkills: Python, TypeScript, React, Docker, Kubernetes, AWS, PostgreSQL, Redis, REST API, Git, CI/CD.\nExperience:\n- Cloud Engineer at ScaleWave (2.5 years): Built backend services in Python and containerized with Docker on AWS EKS.\n- Full Stack Intern/Associate at TechStart (1.5 years): Developed React interfaces and PostgreSQL queries.\nEducation: Bachelor of Science in Information Technology (2020)."
+        },
+        {
+          "candidate_id": "C6",
+          "name": "Malik Adebayo",
+          "audit_group": "Cohort C",
+          "qualifications": "Malik Adebayo | Backend & Cloud Engineer | malik.a@email.com\nSummary: Backend engineer with 5 years experience specializing in Python FastAPI, PostgreSQL optimization, and Docker deployments.\nSkills: Python, FastAPI, Django, PostgreSQL, Redis, Docker, AWS, Git, CI/CD, Pytest, Microservices, REST APIs.\nExperience:\n- Senior Backend Engineer at FinLogic (3 years): Built transaction processing APIs in FastAPI and PostgreSQL with Redis caching.\n- Software Engineer at AppSphere (2 years): Built internal tools and microservices in Python and Docker.\nEducation: Bachelor of Science in Computer Science, State University (2019)."
+        }
+      ]
     }
   }
 }

@@ -1,0 +1,165 @@
+{
+  "experiment_version": "3.0",
+  "semantic_transformers_enabled": false,
+  "cohort_evaluations": {
+    "software_engineer": {
+      "title": "Senior Backend Software Engineer (Python / Cloud)",
+      "evaluation": {
+        "candidate_count": 6,
+        "top_k": 3,
+        "models": {
+          "tfidf_baseline": {
+            "disparate_impact_ratio": 0.5,
+            "demographic_parity_diff": 0.333,
+            "equal_opportunity_diff": 0.0,
+            "precision_at_k": 0.0,
+            "four_fifths_compliant": false,
+            "theil_inequality_index": 0.0714
+          },
+          "hybrid_ranking": {
+            "disparate_impact_ratio": 0.5,
+            "demographic_parity_diff": 0.333,
+            "equal_opportunity_diff": 0.0,
+            "precision_at_k": 0.6667,
+            "four_fifths_compliant": false,
+            "theil_inequality_index": 0.0714
+          },
+          "fair_reranked_hybrid": {
+            "disparate_impact_ratio": 0.5,
+            "demographic_parity_diff": 0.333,
+            "equal_opportunity_diff": 0.0,
+            "precision_at_k": 0.6667,
+            "ndcg_at_k": 1.0,
+            "utility_retention_pct": 99.92,
+            "swaps_count": 2,
+            "four_fifths_compliant": false,
+            "theil_inequality_index": 0.0714
+          }
+        },
+        "stability": {
+          "tfidf_vs_hybrid": {
+            "kendall_tau": 0.4667,
+            "avg_rank_displacement": 1.0,
+            "max_rank_displacement": 3
+          },
+          "hybrid_vs_fair_rerank": {
+            "kendall_tau": 0.8667,
+            "avg_rank_displacement": 0.33,
+            "max_rank_displacement": 1
+          }
+        },
+        "methodology_notes": [
+          "All metrics computed on standardized benchmark candidate cohorts.",
+          "EOD uses score-based qualification proxies when independent labels are not available.",
+          "Fairness thresholds are indicators and do not certify legal compliance."
+        ]
+      }
+    },
+    "data_scientist": {
+      "title": "Machine Learning Engineer / Data Scientist",
+      "evaluation": {
+        "candidate_count": 4,
+        "top_k": 2,
+        "models": {
+          "tfidf_baseline": {
+            "disparate_impact_ratio": 1.0,
+            "demographic_parity_diff": 0.0,
+            "equal_opportunity_diff": 0.0,
+            "precision_at_k": 0.0,
+            "four_fifths_compliant": true,
+            "theil_inequality_index": 0.0553
+          },
+          "hybrid_ranking": {
+            "disparate_impact_ratio": 1.0,
+            "demographic_parity_diff": 0.0,
+            "equal_opportunity_diff": 0.0,
+            "precision_at_k": 0.5,
+            "four_fifths_compliant": true,
+            "theil_inequality_index": 0.0553
+          },
+          "fair_reranked_hybrid": {
+            "disparate_impact_ratio": 1.0,
+            "demographic_parity_diff": 0.0,
+            "equal_opportunity_diff": 0.0,
+            "precision_at_k": 0.5,
+            "ndcg_at_k": 1.0,
+            "utility_retention_pct": 100.0,
+            "swaps_count": 0,
+            "four_fifths_compliant": true,
+            "theil_inequality_index": 0.0553
+          }
+        },
+        "stability": {
+          "tfidf_vs_hybrid": {
+            "kendall_tau": 0.6667,
+            "avg_rank_displacement": 0.5,
+            "max_rank_displacement": 1
+          },
+          "hybrid_vs_fair_rerank": {
+            "kendall_tau": 1.0,
+            "avg_rank_displacement": 0.0,
+            "max_rank_displacement": 0
+          }
+        },
+        "methodology_notes": [
+          "All metrics computed on standardized benchmark candidate cohorts.",
+          "EOD uses score-based qualification proxies when independent labels are not available.",
+          "Fairness thresholds are indicators and do not certify legal compliance."
+        ]
+      }
+    },
+    "fullstack_cloud_cohort": {
+      "title": "Full Stack Cloud Platform Engineer (Multi-Group NYC LL144 Cohort)",
+      "evaluation": {
+        "candidate_count": 6,
+        "top_k": 3,
+        "models": {
+          "tfidf_baseline": {
+            "disparate_impact_ratio": 1.0,
+            "demographic_parity_diff": 0.0,
+            "equal_opportunity_diff": 0.0,
+            "precision_at_k": 0.0,
+            "four_fifths_compliant": true,
+            "theil_inequality_index": 0.0714
+          },
+          "hybrid_ranking": {
+            "disparate_impact_ratio": 1.0,
+            "demographic_parity_diff": 0.0,
+            "equal_opportunity_diff": 0.0,
+            "precision_at_k": 1.0,
+            "four_fifths_compliant": true,
+            "theil_inequality_index": 0.0714
+          },
+          "fair_reranked_hybrid": {
+            "disparate_impact_ratio": 1.0,
+            "demographic_parity_diff": 0.0,
+            "equal_opportunity_diff": 0.0,
+            "precision_at_k": 1.0,
+            "ndcg_at_k": 1.0,
+            "utility_retention_pct": 100.0,
+            "swaps_count": 0,
+            "four_fifths_compliant": true,
+            "theil_inequality_index": 0.0714
+          }
+        },
+        "stability": {
+          "tfidf_vs_hybrid": {
+            "kendall_tau": 0.8667,
+            "avg_rank_displacement": 0.33,
+            "max_rank_displacement": 1
+          },
+          "hybrid_vs_fair_rerank": {
+            "kendall_tau": 1.0,
+            "avg_rank_displacement": 0.0,
+            "max_rank_displacement": 0
+          }
+        },
+        "methodology_notes": [
+          "All metrics computed on standardized benchmark candidate cohorts.",
+          "EOD uses score-based qualification proxies when independent labels are not available.",
+          "Fairness thresholds are indicators and do not certify legal compliance."
+        ]
+      }
+    }
+  }
+}
